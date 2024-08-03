@@ -351,6 +351,24 @@ case $CI_TARGET in
         # fi
         ;;
 
+    bssl_compat)
+    	setup_clang_toolchain
+    	echo "Building bssl-compat..."
+    	bazel build "${BAZEL_BUILD_OPTIONS[@]}" \
+        	--remote_download_toplevel \
+        	-c fastbuild \
+        	//bssl-compat
+
+    	REAL_BAZEL_BIN=$(readlink -f bazel-bin)
+    	BSSL_COMPAT_LIB="$REAL_BAZEL_BIN/bssl-compat/bssl-compat/lib/libbssl-compat.a"
+    	BSSL_COMPAT_INCLUDE="$REAL_BAZEL_BIN/bssl-compat/bssl-compat/include"
+    	BSSL_COMPAT_COPY="$REAL_BAZEL_BIN/bssl-compat/copy_bssl-compat/bssl-compat"
+
+    	echo "Checking bssl-compat build artifacts:"
+    	[ -f "$BSSL_COMPAT_LIB" ] && echo "Library found: $BSSL_COMPAT_LIB" && ls -l "$BSSL_COMPAT_LIB"
+    	[ -d "$BSSL_COMPAT_INCLUDE" ] && echo "Include directory found: $BSSL_COMPAT_INCLUDE" && ls -l "$BSSL_COMPAT_INCLUDE"
+    	[ -f "$BSSL_COMPAT_COPY" ] && echo "Copy found: $BSSL_COMPAT_COPY" && ls -l "$BSSL_COMPAT_COPY"
+    	;;
     check_and_fix_proto_format)
         setup_clang_toolchain
         echo "Check and fix proto format ..."
@@ -886,7 +904,24 @@ case $CI_TARGET in
         echo "bazel size optimized build with tests..."
         bazel_envoy_binary_build sizeopt
         ;;
+    bssl_compat)
+        setup_clang_toolchain
+        echo "Building bssl-compat..."
+        bazel build "${BAZEL_BUILD_OPTIONS[@]}" \
+            --remote_download_toplevel \
+            -c fastbuild \
+            //bssl-compat
+    
+        REAL_BAZEL_BIN=$(readlink -f bazel-bin)
+        BSSL_COMPAT_LIB="$REAL_BAZEL_BIN/bssl-compat/bssl-compat/lib/libbssl-compat.a"
+        BSSL_COMPAT_INCLUDE="$REAL_BAZEL_BIN/bssl-compat/bssl-compat/include"
+        BSSL_COMPAT_COPY="$REAL_BAZEL_BIN/bssl-compat/copy_bssl-compat/bssl-compat"
 
+        echo "Checking bssl-compat build artifacts:"
+        [ -f "$BSSL_COMPAT_LIB" ] && echo "Library found: $BSSL_COMPAT_LIB" && ls -l "$BSSL_COMPAT_LIB"
+        [ -d "$BSSL_COMPAT_INCLUDE" ] && echo "Include directory found: $BSSL_COMPAT_INCLUDE" && ls -l "$BSSL_COMPAT_INCLUDE"
+        [ -f "$BSSL_COMPAT_COPY" ] && echo "Copy found: $BSSL_COMPAT_COPY" && ls -l "$BSSL_COMPAT_COPY"
+        ;;
     sizeopt.server_only)
         setup_clang_toolchain
         echo "bazel size optimized build..."

@@ -40,4 +40,4 @@ export IMAGE_NAME=$(cat "${SCRATCH_DIR}/iid" | cut -d ":" -f 1)
 export IMAGE_ID=$(cat "${SCRATCH_DIR}/iid" | cut -d ":" -f 2)
 
 # Hand off to the upstream run_envoy_docker.sh script
-exec ./ci/run_envoy_docker.sh "$@"
+exec ./ci/run_envoy_docker.sh /bin/bash
