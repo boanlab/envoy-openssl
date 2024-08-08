@@ -7,5 +7,10 @@
  * https://www.openssl.org/docs/man3.0/man3/BASIC_CONSTRAINTS_new.html
  */
 extern "C" BASIC_CONSTRAINTS *BASIC_CONSTRAINTS_new() {
-  return ossl.ossl_BASIC_CONSTRAINTS_new();
+  if(use_ossl){
+    return ossl.ossl_BASIC_CONSTRAINTS_new();
+  }
+  else {
+    return bssl.bssl_BASIC_CONSTRAINTS_new();
+  }
 }

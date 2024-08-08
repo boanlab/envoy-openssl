@@ -9,6 +9,11 @@
 extern "C" int BIO_free(BIO *bio) {
   // In BoringSSL, the BIO_free() call frees the whole chain,
   // whereas in OpenSSL, it just frees the single bio.
-  ossl.ossl_BIO_free_all(bio);
-  return 1;
+  if(use_ossl){
+    ossl.ossl_BIO_free_all(bio);
+    return 1;
+  }
+  else {
+    return bssl.bssl_BIO_free(bio);
+  }
 }

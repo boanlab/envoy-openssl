@@ -13,5 +13,10 @@
  * it does also initialise the reference count to 1.
  */
 extern "C" BIO *BIO_new(const BIO_METHOD *bsslMethod) {
-  return ossl.ossl_BIO_new(bio_meth_map_lookup(bsslMethod));
+  if(use_ossl){
+    return ossl.ossl_BIO_new(bio_meth_map_lookup(bsslMethod));
+  }
+  else {
+    return bssl.bssl_BIO_new(bio_meth_map_lookup(bsslMethod));
+  }
 }

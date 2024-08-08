@@ -3,6 +3,12 @@
 
 
 extern "C" int BIO_printf(BIO *bio, const char *format, ...) {
+  if(use_ossl){
+
+  }
+  else {
+
+  }
   va_list args;
   va_start(args, format);
   int ret = ossl.ossl_BIO_vprintf(bio, format, args);
