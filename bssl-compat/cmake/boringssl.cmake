@@ -24,6 +24,9 @@ if(BUILD_BORINGSSL)
   add_dependencies(BoringSSL::Crypto BoringSSL)
 endif(BUILD_BORINGSSL)
 
+# 사실상 위 옵션은 없는 내용임, boringssl 라이브러리를 빌드할 이유는 없음
+# 아래 내용은 bssl에 대한 함수 정의임
+
 add_custom_target(bssl-gen)
 
 function(_target_add_bssl_file target src-file dst-file)

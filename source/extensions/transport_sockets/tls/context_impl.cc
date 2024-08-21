@@ -124,8 +124,20 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
     rc = SSL_CTX_set_max_proto_version(ctx.ssl_ctx_.get(), config.maxProtocolVersion());
     RELEASE_ASSERT(rc == 1, Utility::getLastCryptoError().value_or(""));
 
+    // This figure has benn modified for add TLS 1.3 configuration with SSL_CTX_set_ciphersuites()
+    // with openssl What I intended is to use custom header file for the configuration function
+    // which is missing in boringssl headers. Thus, I'll give the function header in two different
+    // ways.
+    //
+    // 1. Include custom header seperatly in envoy source code
+    // 2. fix the existing boringssl header file before including to the envoy build step.
+    //
+    // the latter would be more easy to integrate into other projects
+
     if (!capabilities_.provides_ciphers_and_curves &&
-        !SSL_CTX_set_strict_cipher_list(ctx.ssl_ctx_.get(), config.cipherSuites().c_str())) {
+        (!SSL_CTX_set_ciphersuites(ctx.ssl_ctx_.get(), config.cipherSuites().c_str()) ||
+        (!SSL_CTX_set_strict_cipher_list(ctx.ssl_ctx_.get(), config.cipherSuites().c_str())) {
+
       // Break up a set of ciphers into each individual cipher and try them each individually in
       // order to attempt to log which specific one failed. Example of config.cipherSuites():
       // "-ALL:[ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305]:ECDHE-ECDSA-AES128-SHA".
@@ -134,6 +146,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
       // cipher), and the common separator in names (ECDHE-ECDSA-AES128-GCM-SHA256). Don't split on
       // it because it will separate pieces of the same cipher. When it is a leading character, it
       // is removed below.
+
       std::vector<absl::string_view> ciphers =
           StringUtil::splitToken(config.cipherSuites(), ":+![|]", false);
       std::vector<std::string> bad_ciphers;
@@ -144,7 +157,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
           cipher_str.erase(cipher_str.begin());
         }
 
-        if (!SSL_CTX_set_strict_cipher_list(ctx.ssl_ctx_.get(), cipher_str.c_str())) {
+        if (!SSL_CTX_set_ciphersuites(ctx.ssl_ctx_.get(), cipher_str.c_str())) {
           bad_ciphers.push_back(cipher_str);
         }
       }

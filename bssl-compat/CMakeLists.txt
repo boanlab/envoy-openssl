@@ -284,6 +284,7 @@ target_add_bssl_include(bssl-compat
 )
 
 # Case where simple mapping exists
+# this part is not what we are concerning about.
 target_add_bssl_function(bssl-compat
   ASN1_IA5STRING_free
   ASN1_IA5STRING_new

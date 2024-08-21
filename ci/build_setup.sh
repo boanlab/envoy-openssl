@@ -63,7 +63,7 @@ function setup_clang_toolchain() {
     else
       BAZEL_BUILD_OPTIONS+=("--config=clang")
     fi
-  else
+  else # RBE not setup
     if [[ "${ENVOY_STDLIB}" == "libc++" ]]; then
       BAZEL_BUILD_OPTIONS+=("--config=remote-clang-libc++")
     else
