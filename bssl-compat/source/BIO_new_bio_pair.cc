@@ -8,15 +8,10 @@
  * BSSL: https://github.com/google/boringssl/blob/cacb5526268191ab52e3a8b2d71f686115776646/src/include/openssl/bio.h#L616
  */
 extern "C" int BIO_new_bio_pair(BIO **out1, size_t writebuf1, BIO **out2, size_t writebuf2) {
-  if(use_ossl){
-    int rc = ossl.ossl_BIO_new_bio_pair(out1, writebuf1, out2, writebuf2);
-    if (rc == 0) {
-      *out1 = nullptr;
-      *out2 = nullptr;
-    }
-    return rc;
+  int rc = ossl.ossl_BIO_new_bio_pair(out1, writebuf1, out2, writebuf2);
+  if (rc == 0) {
+    *out1 = nullptr;
+    *out2 = nullptr;
   }
-  else {
-    return bssl.bssl_BIO_new_bio_pair(out1, writebuf1, out2, writebuf2);
-  }
+  return rc;
 }

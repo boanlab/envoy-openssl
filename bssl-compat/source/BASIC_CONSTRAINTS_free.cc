@@ -7,10 +7,5 @@
  * https://www.openssl.org/docs/man3.0/man3/BASIC_CONSTRAINTS_free.html
  */
 extern "C" void BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *a) {
-  if(use_ossl){
-    ossl.ossl_BASIC_CONSTRAINTS_free(a);
-  }
-  else {
-    bssl.bssl_BASIC_CONSTRAINTS_free(a);
-  }
+  ossl.ossl_BASIC_CONSTRAINTS_free(a);
 }
