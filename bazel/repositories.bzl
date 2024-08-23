@@ -376,6 +376,7 @@ def _boringssl():
         patch_args = ["-p1"],
         patches = [
             "@envoy//bazel:boringssl_static.patch",
+            "@envoy//bazel:add_OSSL_FUNCTION.patch"
         ],
     )
 
