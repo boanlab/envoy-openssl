@@ -313,6 +313,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
 
   parsed_alpn_protocols_ = parseAlpnProtocols(config.alpnProtocols());
 
+// config
 #if BORINGSSL_API_VERSION >= 21
   // Register stat names based on lists reported by BoringSSL.
   std::vector<const char*> list(SSL_get_all_cipher_names(nullptr, 0));
@@ -340,6 +341,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
     }
   }
 
+  // TLS 1.3 Configuration (Marked)
   // Add supported cipher suites from the TLS 1.3 spec:
   // https://tools.ietf.org/html/rfc8446#appendix-B.4
   // AES-CCM cipher suites are removed (no BoringSSL support).
