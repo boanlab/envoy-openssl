@@ -140,6 +140,7 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_select_certificate_cb.cc
   source/SSL_CTX_set_select_certificate_cb.h
   source/SSL_CTX_set_strict_cipher_list.cc
+  source/SSL_CTX_set_ciphersuites.cc
   source/SSL_CTX_set_tlsext_servername_callback.cc
   source/SSL_CTX_set_tlsext_status_cb.c
   source/SSL_CTX_set_tlsext_ticket_key_cb.cc
