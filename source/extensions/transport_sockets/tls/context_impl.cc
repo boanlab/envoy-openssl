@@ -124,6 +124,14 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
     rc = SSL_CTX_set_max_proto_version(ctx.ssl_ctx_.get(), config.maxProtocolVersion());
     RELEASE_ASSERT(rc == 1, Utility::getLastCryptoError().value_or(""));
 
+    // the ciphersuites configuration section has been hard coded to test seperately configuring
+    // context
+
+    SSL_CTX_set_ciphersuites(ctx.ssl_ctx_.get(), config.cipherSuites().c_str());
+    SSL_CTX_set_strict_cipher_list(ctx.ssl_ctx_.get(), config.cipherSuites().c_str());
+
+
+    /*
     // This figure has benn modified for add TLS 1.3 configuration with SSL_CTX_set_ciphersuites()
     // with openssl What I intended is to use custom header file for the configuration function
     // which is missing in boringssl headers. Thus, I'll give the function header in two different
@@ -133,6 +141,14 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
     // 2. fix the existing boringssl header file before including to the envoy build step.
     //
     // the latter would be more easy to integrate into other projects
+    //
+    // You can see the configuration functions are seperated into SSL_CTX_set_ciphersuites and
+    // SSL_CTX_set_strict_cipher_list. This cause the hard time for implementing seperating
+    // ciphersuites within tls 1.3 and tls 1.2.
+    // I want to suggest further work for seperating the ciphersuites config into two attributes
+    // tls1_2 and tls1_3. this gonna work regardless of meshConfig from tls max-version the reason
+    // why boringSSL doesn't support for configuring tls 1.3
+
 
     if (!capabilities_.provides_ciphers_and_curves &&
         (!SSL_CTX_set_ciphersuites(ctx.ssl_ctx_.get(), config.cipherSuites().c_str()) ||
@@ -165,6 +181,8 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
                                        "ciphers were rejected when tried individually: {}",
                                        config.cipherSuites(), absl::StrJoin(bad_ciphers, ", ")));
     }
+
+    */
 
     if (!capabilities_.provides_ciphers_and_curves &&
         !SSL_CTX_set1_curves_list(ctx.ssl_ctx_.get(), config.ecdhCurves().c_str())) {
