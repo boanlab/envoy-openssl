@@ -2,6 +2,9 @@ project(prefixer)
 
 # https://llvm.org/docs/CMake.html#embedding-llvm-in-your-project
 
+set(LLVM_DIR "/usr/lib/llvm/lib/cmake/llvm")
+set(Clang_DIR "/usr/lib/llvm/lib/cmake/clang")
+
 find_package(Clang REQUIRED CONFIG)
 find_package(LLVM REQUIRED CONFIG)
 
