@@ -43,13 +43,13 @@ cc_import(
 
 alias(
     name = "ssl",
-    actual = ":bssl_compat_lib",
+    actual = ":bssl-compat-lib",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "crypto",
-    actual = ":bssl_compat_lib",
+    actual = ":bssl-compat-lib",
     visibility = ["//visibility:public"],
 )
 
