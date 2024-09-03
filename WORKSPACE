@@ -5,12 +5,7 @@ workspace(name = "envoy")
 #    path = "bssl-compat",
 #)
 
-cc_import(
-    name = "bssl-compat-lib",
-    static_library = "/bssl-compat/lib/libbssl-compat.a",
-    hdrs = glob(["/bssl-compat/include/*.h"]),
-    visibility = ["//visibility:public"],
-)
+
 
 load("//bazel:api_binding.bzl", "envoy_api_binding")
 
