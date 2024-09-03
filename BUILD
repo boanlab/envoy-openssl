@@ -36,8 +36,8 @@ filegroup(
 
 cc_import(
     name = "bssl-compat-lib",
-    static_library = "/bssl-compat/lib/libbssl-compat.a",
-    hdrs = glob(["/bssl-compat/include/*.h"]),
+    static_library = "bssl-compat-lib/lib/libbssl-compat.a",
+    hdrs = glob(["bssl-compat-lib/include/*.h"]),
     visibility = ["//visibility:public"],
 )
 
