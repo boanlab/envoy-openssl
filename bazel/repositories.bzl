@@ -255,11 +255,11 @@ def envoy_dependencies(skip_targets = []):
     # Binding to an alias pointing to the bssl-compat layer
     native.bind(
         name = "ssl",
-        actual = ":ssl",
+        actual = "//:ssl",
     )
     native.bind(
         name = "crypto",
-        actual = ":crypto",
+        actual = "//:crypto",
     )
 
     # The long repo names (`com_github_fmtlib_fmt` instead of `fmtlib`) are
