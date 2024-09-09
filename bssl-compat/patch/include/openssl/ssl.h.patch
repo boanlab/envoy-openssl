@@ -1,9 +1,0 @@
-diff --git a/src/include/openssl/ssl.h b/src/include/openssl/ssl.h
-index 0000000..1111111 100644
---- a/src/include/openssl/ssl.h
-+++ b/src/include/openssl/ssl.h
-@@ -1499,0 +1500,4 @@
-+// Sets the cipher suites for TLSv1.3 connections associated with |ctx| to
-+// |str|. Returns 1 on success and 0 on failure.
-+// This function is arbitrarily added for configuration of ciphersuites
-+OPENSSL_EXPORT int SSL_CTX_set_ciphersuites(SSL_CTX *ctx, const char *str);

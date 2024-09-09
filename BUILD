@@ -34,24 +34,6 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-cc_import(
-    name = "bssl-compat-lib",
-    static_library = "bssl-compat/lib/libbssl-compat.a",
-    hdrs = glob(["bssl-compat/include/**/*.h"]),
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "ssl",
-    actual = ":bssl-compat-lib",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "crypto",
-    actual = ":bssl-compat-lib",
-    visibility = ["//visibility:public"],
-)
 
 # These two definitions exist to help reduce Envoy upstream core code depending on extensions.
 # To avoid visibility problems, see notes in source/extensions/extensions_build_config.bzl

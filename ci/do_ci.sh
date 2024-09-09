@@ -206,7 +206,7 @@ function bazel_binary_build() {
 }
 
 function bazel_envoy_binary_build() {
-  bazel_binary_build "$1" "${ENVOY_BUILD_TARGET}" "${ENVOY_BUILD_DEBUG_INFORMATION}" envoy
+  bazel_binary_build "$1" "${ENVOY_BUILD_TARGET}" "${ENVOY_BUILD_DEBUG_INFORMATION}" --experimental_execution_log_file=/tmp/logs  envoy
 }
 
 function bazel_contrib_binary_build() {

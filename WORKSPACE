@@ -1,9 +1,10 @@
 workspace(name = "envoy")
 
-#local_repository(
-#    name = "bssl-compat",
-#    path = "bssl-compat",
-#)
+new_local_repository(
+    name = "bssl-compat",
+    path = "/usr/local/lib",
+    build_file = "//bssl-compat:BUILD"
+)
 
 
 
