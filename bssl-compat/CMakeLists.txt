@@ -7,8 +7,8 @@ if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
-set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.13.tar.gz)
-set(OPENSSL_URL_HASH e74504ed7035295ec7062b1da16c15b57ff2a03cd2064a28d8c39458cacc45fc)
+set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.2.0.tar.gz)
+set(OPENSSL_URL_HASH a92f6dbca97566780ec95e2ba3d48aa8daa09048aac8392c7c7c58cc9c03c762)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -198,6 +198,7 @@ add_library(bssl-compat STATIC
   source/X509_STORE_CTX_set_verify_cb.cc
   source/X509_verify_cert_error_string.cc
   source/X509_VERIFY_PARAM_set_time_posix.cc
+  source/OpenSSL_version.cc
 )
 
 target_add_bssl_include(bssl-compat

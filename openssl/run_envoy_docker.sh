@@ -19,17 +19,39 @@ docker build --pull --iidfile "${SCRATCH_DIR}/iid" -f - "${SCRATCH_DIR}" << EOF
     RUN sed -i "s|^deb.*kitware.*$|deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ \$(lsb_release -cs) main|g" /etc/apt/sources.list
     RUN apt update
 
-    # Install OpenSSL 3.0.x
-    ENV OPENSSL_VERSION=3.0.8
+    # Install OpenSSL 3.2.0
+    ENV OPENSSL_VERSION=3.2.0
     ENV OPENSSL_ROOTDIR=/usr/local/openssl-\$OPENSSL_VERSION
-    RUN apt install -y build-essential checkinstall zlib1g-dev
+    # OpenSSL Dependencies
+    RUN apt install -y build-essential checkinstall zlib1g-dev 
     RUN wget -qO- https://github.com/openssl/openssl/releases/download/openssl-\$OPENSSL_VERSION/openssl-\$OPENSSL_VERSION.tar.gz | tar xz -C /
     RUN cd /openssl-\$OPENSSL_VERSION && ./config -d --prefix=\$OPENSSL_ROOTDIR --openssldir=\$OPENSSL_ROOTDIR
     RUN make -C /openssl-\$OPENSSL_VERSION -j && make -C /openssl-\$OPENSSL_VERSION install_sw
     RUN echo "\$OPENSSL_ROOTDIR/lib64" > /etc/ld.so.conf.d/openssl-\$OPENSSL_VERSION.conf
     RUN ldconfig
-EOF
+    
+    # WORKDIR openssl-\$OPENSSL_VERSION
+    # RUN make install
+    # RUN mv /usr/bin/openssl /usr/bin/openssl.backup
+    # RUN cp /usr/local/openssl-\$OPENSSL_VERSION/bin/openssl /usr/bin/openssl
+    # WORKDIR ..
 
+    # Install libOQS
+    RUN apt install -y astyle cmake gcc ninja-build libssl-dev python3-pytest python3-pytest-xdist unzip xsltproc doxygen graphviz python3-yaml valgrind
+    RUN git clone -b main https://github.com/open-quantum-safe/liboqs.git
+    WORKDIR liboqs
+    RUN mkdir build
+    WORKDIR build
+    RUN cmake -GNinja ..
+    RUN ninja
+    RUN ninja install
+
+    # Install OQS-Provider
+    WORKDIR /
+    RUN git clone https://github.com/open-quantum-safe/oqs-provider.git
+    WORKDIR oqs-provider
+    RUN env OPENSSL_ROOT_DIR="\$OPENSSL_ROOTDIR" liboqs_DIR="/liboqs" cmake -S . -B _build && cmake --build _build && ctest --test-dir _build && cmake --install _build
+EOF
 
 # Build with libstdc++ rather than libc++ because the bssl-compat prefixer tool
 # is linked against some of the LLVM libraries which require libstdc++
