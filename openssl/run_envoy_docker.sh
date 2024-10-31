@@ -33,7 +33,7 @@ EOF
 
 # Build with libstdc++ rather than libc++ because the bssl-compat prefixer tool
 # is linked against some of the LLVM libraries which require libstdc++
-export ENVOY_STDLIB=libstdc++
+export ENVOY_STDLIB=libc++
 
 # Tell the upstream run_envoy_docker.sh script to us our builder image
 export IMAGE_NAME=$(cat "${SCRATCH_DIR}/iid" | cut -d ":" -f 1)
