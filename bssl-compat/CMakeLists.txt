@@ -1,3 +1,8 @@
+set(CMAKE_VERBOSE_MAKEFILE ON)
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
+    set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+endif()
+
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 include(FetchContent)
@@ -15,6 +20,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Produce a compilation database in json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+############################################################################################################################################ Test
+set(LLVM_DIR "/usr/lib/llvm-6.0.0/lib/cmake/llvm")
+set(Clang_DIR "/usr/lib/llvm-6.0.0/lib/cmake/clang")
+############################################################################################################################################ /Test
 
 project(bssl-compat VERSION 0.1 LANGUAGES C CXX)
 

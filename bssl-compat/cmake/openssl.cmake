@@ -1,4 +1,4 @@
-find_package(OpenSSL 3.0 COMPONENTS Crypto SSL)
+find_package(OpenSSL 3.2 COMPONENTS Crypto SSL)
 
 if(OpenSSL_FOUND)
     add_custom_target(OpenSSL)
