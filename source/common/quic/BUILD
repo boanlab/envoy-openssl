@@ -82,35 +82,43 @@ envoy_cc_library(
 
 envoy_cc_library(
     name = "envoy_quic_proof_source_base_lib",
-    srcs = ["envoy_quic_proof_source_base.cc"],
-    hdrs = ["envoy_quic_proof_source_base.h"],
+    srcs = [
+        #"envoy_quic_proof_source_base.cc"
+    ],
+    hdrs = [
+        "envoy_quic_proof_source_base.h"
+    ],
     external_deps = ["quiche_quic_platform"],
     tags = ["nofips"],
     deps = [
-        ":envoy_quic_utils_lib",
-        "@com_github_google_quiche//:quic_core_crypto_certificate_view_lib",
-        "@com_github_google_quiche//:quic_core_crypto_crypto_handshake_lib",
-        "@com_github_google_quiche//:quic_core_crypto_proof_source_lib",
-        "@com_github_google_quiche//:quic_core_data_lib",
-        "@com_github_google_quiche//:quic_core_versions_lib",
+        #":envoy_quic_utils_lib",
+        #"@com_github_google_quiche//:quic_core_crypto_certificate_view_lib",
+        #"@com_github_google_quiche//:quic_core_crypto_crypto_handshake_lib",
+        #"@com_github_google_quiche//:quic_core_crypto_proof_source_lib",
+        #"@com_github_google_quiche//:quic_core_data_lib",
+        #"@com_github_google_quiche//:quic_core_versions_lib",
     ],
 )
 
 envoy_cc_library(
     name = "envoy_quic_proof_source_lib",
-    srcs = ["envoy_quic_proof_source.cc"],
-    hdrs = ["envoy_quic_proof_source.h"],
+    srcs = [
+        #"envoy_quic_proof_source.cc"
+        ],
+    hdrs = [
+        #"envoy_quic_proof_source.h"
+        ],
     external_deps = ["ssl"],
     tags = ["nofips"],
     deps = [
-        ":envoy_quic_proof_source_base_lib",
-        ":envoy_quic_utils_lib",
-        ":quic_io_handle_wrapper_lib",
-        ":quic_transport_socket_factory_lib",
+        #":envoy_quic_proof_source_base_lib",
+        #":envoy_quic_utils_lib",
+        #":quic_io_handle_wrapper_lib",
+        #":quic_transport_socket_factory_lib",
         "//envoy/ssl:tls_certificate_config_interface",
         "//source/common/stream_info:stream_info_lib",
         "//source/server:listener_stats",
-        "@com_github_google_quiche//:quic_core_crypto_certificate_view_lib",
+        #"@com_github_google_quiche//:quic_core_crypto_certificate_view_lib",
     ],
 )
 
@@ -130,26 +138,31 @@ envoy_cc_library(
 
 envoy_cc_library(
     name = "envoy_quic_proof_verifier_lib",
-    srcs = ["envoy_quic_proof_verifier.cc"],
-    hdrs = ["envoy_quic_proof_verifier.h"],
+    srcs = [#"envoy_quic_proof_verifier.cc"
+        ],
+    hdrs = [
+        #"envoy_quic_proof_verifier.h"
+        ],
     external_deps = ["quiche_quic_platform"],
     tags = ["nofips"],
     deps = [
-        ":envoy_quic_proof_verifier_base_lib",
-        ":envoy_quic_utils_lib",
-        ":quic_ssl_connection_info_lib",
+        #":envoy_quic_proof_verifier_base_lib",
+        #":envoy_quic_utils_lib",
+        #":quic_ssl_connection_info_lib",
         "//source/extensions/transport_sockets/tls:context_lib",
     ],
 )
 
 envoy_cc_library(
     name = "envoy_quic_stream_lib",
-    hdrs = ["envoy_quic_stream.h"],
+    hdrs = [
+        #"envoy_quic_stream.h"
+    ],
     tags = ["nofips"],
     deps = [
-        ":envoy_quic_simulated_watermark_buffer_lib",
-        ":envoy_quic_utils_lib",
-        ":quic_filter_manager_connection_lib",
+        #":envoy_quic_simulated_watermark_buffer_lib",
+        #":envoy_quic_utils_lib",
+        #":quic_filter_manager_connection_lib",
         ":send_buffer_monitor_lib",
         "//envoy/event:dispatcher_interface",
         "//envoy/http:codec_interface",
@@ -165,11 +178,11 @@ envoy_cc_library(
     hdrs = ["client_connection_factory_impl.h"],
     tags = ["nofips"],
     deps = [
-        ":envoy_quic_alarm_factory_lib",
-        ":envoy_quic_client_session_lib",
-        ":envoy_quic_connection_helper_lib",
-        ":envoy_quic_proof_verifier_lib",
-        ":envoy_quic_utils_lib",
+        #":envoy_quic_alarm_factory_lib",
+        #":envoy_quic_client_session_lib",
+        #":envoy_quic_connection_helper_lib",
+        #":envoy_quic_proof_verifier_lib",
+        #":envoy_quic_utils_lib",
         "//envoy/http:codec_interface",
         "//envoy/http:persistent_quic_info_interface",
         "//envoy/registry",
@@ -580,23 +593,27 @@ envoy_cc_library(
 
 envoy_cc_library(
     name = "envoy_quic_connection_id_generator_factory_interface",
-    hdrs = ["envoy_quic_connection_id_generator_factory.h"],
+    hdrs = [
+        #"envoy_quic_connection_id_generator_factory.h"
+    ],
     tags = ["nofips"],
     deps = [
-        "//envoy/config:typed_config_interface",
-        "@com_github_google_quiche//:quic_core_connection_id_generator_interface_lib",
-        "@com_github_google_quiche//:quic_load_balancer_encoder_lib",
+        #"//envoy/config:typed_config_interface",
+        #"@com_github_google_quiche//:quic_core_connection_id_generator_interface_lib",
+        #"@com_github_google_quiche//:quic_load_balancer_encoder_lib",
     ],
 )
 
 envoy_cc_library(
     name = "envoy_quic_server_preferred_address_config_factory_interface",
-    hdrs = ["envoy_quic_server_preferred_address_config_factory.h"],
+    hdrs = [
+        #"envoy_quic_server_preferred_address_config_factory.h"
+        ],
     tags = ["nofips"],
     deps = [
         "//envoy/config:typed_config_interface",
         "//envoy/network:address_interface",
-        "@com_github_google_quiche//:quic_platform_socket_address",
+        #"@com_github_google_quiche//:quic_platform_socket_address",
     ],
 )
 
