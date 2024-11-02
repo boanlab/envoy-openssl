@@ -11,8 +11,12 @@ cat > "$MYTMPDIR/extraincs" <<EOF
 #include <ossl/openssl/types.h>
 #include <ossl/openssl/ssl.h>
 #include <ossl/openssl/x509v3.h>
+#include <ossl/openssl/aes.h>
 #include <ossl/openssl/sha.h>
+#include <ossl/openssl/md5.h>
 EOF
+
+#   --uncomment-typedef-redef AES_KEY --sed 's/ossl_aes_key_st/ossl_AES_KEY_st/' \
 
 uncomment.sh "$1" --comment -h \
   --sed "/#include\s<openssl\/opensslconf\.h>/ e cat $MYTMPDIR/extraincs" \
@@ -58,7 +62,12 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef HMAC_CTX \
   --uncomment-typedef-redef RSA \
   --uncomment-typedef-redef PKCS12 --sed 's/ossl_pkcs12_st/ossl_PKCS12_st/' \
+  --uncomment-typedef-redef SHA_CTX --sed 's/struct ossl_sha_state_st/struct ossl_SHAstate_st/' \
   --uncomment-typedef-redef SHA256_CTX --sed 's/struct ossl_sha256_state_st/struct ossl_SHA256state_st/' \
+  --uncomment-typedef-redef SHA512_CTX --sed 's/struct ossl_sha512_state_st/struct ossl_SHA512state_st/' \
+  --uncomment-typedef-redef MD4_CTX --sed 's/struct ossl_md4_state_st/struct ossl_MD4state_st/' \
+  --uncomment-typedef-redef AES_KEY \
+  --uncomment-typedef-redef MD5_CTX --sed 's/struct ossl_md5_state_st/struct ossl_MD5state_st/' \
   --uncomment-typedef-redef SSL_CIPHER \
   --uncomment-typedef-redef SSL_CTX \
   --uncomment-typedef-redef SSL_METHOD \
