@@ -12,6 +12,7 @@
 # pragma once
 
 # include <openssl/core.h>
+# include <openssl/types.h>
 
 # ifdef __cplusplus
 extern "C" {

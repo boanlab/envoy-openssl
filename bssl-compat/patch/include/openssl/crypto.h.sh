@@ -3,4 +3,5 @@
 set -euo pipefail
 
 uncomment.sh "$1" --comment -h \
-  --uncomment-func-decl FIPS_mode
+  --uncomment-func-decl FIPS_mode \
+  # --uncomment-func-decl OSSL_LIB_CTX_new \

@@ -6,13 +6,13 @@
 #include <openssl/params.h>
 #include <openssl/err.h>
 #include <openssl/types.h>
-//#include <ossl.h>
+#include <ossl.h>
 
 void fetch_signature_algorithms(OSSL_PROVIDER *provider) {
    void *method = NULL;
 
    const OSSL_ALGORITHM *algorithms = OSSL_PROVIDER_query_operation(provider, 
-                                                                  OSSL_OP_SIGNATURE,
+                                                                  ossl_OSSL_OP_SIGNATURE,
                                                                   &method);
    
    if (algorithms) {
@@ -39,7 +39,7 @@ int OQSCALL() {
    }
 
    // OpenSSL 라이브러리 컨텍스트 생성
-   OSSL_LIB_CTX *ctx = OSSL_LIB_CTX_new();
+   OSSL_LIB_CTX *ctx = ossl_OSSL_LIB_CTX_new();
    if (!ctx) {
        printf("Failed to create library context\n");
        ERR_print_errors_fp(stderr);
@@ -51,7 +51,7 @@ int OQSCALL() {
    if (!defprov) {
        printf("Failed to load default provider\n");
        ERR_print_errors_fp(stderr);
-       OSSL_LIB_CTX_free(ctx);
+       ossl_OSSL_LIB_CTX_free(ctx);
        return 1;
    }
 
@@ -61,7 +61,7 @@ int OQSCALL() {
        printf("Failed to load oqsprovider\n");
        ERR_print_errors_fp(stderr);
        OSSL_PROVIDER_unload(defprov);
-       OSSL_LIB_CTX_free(ctx);
+       ossl_OSSL_LIB_CTX_free(ctx);
        return 1;
    }
 
@@ -71,7 +71,7 @@ int OQSCALL() {
    // 정리
    OSSL_PROVIDER_unload(oqsprov);
    OSSL_PROVIDER_unload(defprov);
-   OSSL_LIB_CTX_free(ctx);
+   ossl_OSSL_LIB_CTX_free(ctx);
    
    return 0;
 }
