@@ -361,6 +361,7 @@ case $CI_TARGET in
         	--subcommands \
         	-c fastbuild \
         	//bssl-compat
+	
 
     	REAL_BAZEL_BIN=$(readlink -f bazel-bin)
     	BSSL_COMPAT_LIB="$REAL_BAZEL_BIN/bssl-compat/bssl-compat/lib/libbssl-compat.a"

@@ -48,6 +48,7 @@ add_dependencies(bssl-gen ossl-gen) # generate ossl headers before bssl headers
 
 # custom mappings
 add_library(bssl-compat STATIC
+  # source/aoqstest.c # This is test file
   source/ASN1_TIME_free.cc
   source/BASIC_CONSTRAINTS_free.cc
   source/BASIC_CONSTRAINTS_new.cc
@@ -212,6 +213,15 @@ add_library(bssl-compat STATIC
 )
 
 target_add_bssl_include(bssl-compat
+  include/openssl/provider.h
+  include/openssl/core.h
+  include/openssl/core_names.h
+  include/openssl/core_dispatch.h
+  include/openssl/params.h
+  include/openssl/types.h
+  include/openssl/macros.h
+
+
   include/openssl/aead.h
   include/openssl/aes.h
   include/openssl/arm_arch.h
