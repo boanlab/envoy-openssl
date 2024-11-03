@@ -11,11 +11,12 @@ SCRATCH_DIR="$(mktemp -d)"
 trap 'rm -rf -- "$SCRATCH_DIR"' EXIT
 
 # Create our extended builder image, based on upstream's builder image.
-docker build --pull --iidfile "${SCRATCH_DIR}/iid" -f - "${SCRATCH_DIR}" << EOF
+docker build --network=host --pull --iidfile "${SCRATCH_DIR}/iid" -f - "${SCRATCH_DIR}" << EOF
     FROM $(./ci/run_envoy_docker.sh 'echo $ENVOY_BUILD_IMAGE')
 
     # Install the missing Kitware public key
-    RUN wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor - > /usr/share/keyrings/kitware-archive-keyring.gpg
+    RUN wget --no-check-certificate -qO - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | \
+    gpg --dearmor - > /usr/share/keyrings/kitware-archive-keyring.gpg
     RUN sed -i "s|^deb.*kitware.*$|deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ \$(lsb_release -cs) main|g" /etc/apt/sources.list
     RUN apt update
 

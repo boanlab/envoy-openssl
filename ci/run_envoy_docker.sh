@@ -34,6 +34,7 @@ else
   # in useradd below, which is need for correct Python execution in the Docker
   # environment.
   ENVOY_DOCKER_OPTIONS+=(-u root:root)
+  ENVOY_DOCKER_OPTIONS+=(--network=host)
   DOCKER_USER_ARGS=()
   DOCKER_GROUP_ARGS=()
   DEFAULT_ENVOY_DOCKER_BUILD_DIR=/tmp/envoy-docker-build

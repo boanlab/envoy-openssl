@@ -213,14 +213,6 @@ add_library(bssl-compat STATIC
 )
 
 target_add_bssl_include(bssl-compat
-  include/openssl/types.h
-  include/openssl/core.h
-  include/openssl/core_names.h
-  include/openssl/core_dispatch.h
-  include/openssl/params.h
-  include/openssl/macros.h
-  include/openssl/provider.h
-
   include/openssl/aead.h
   include/openssl/aes.h
   include/openssl/arm_arch.h
