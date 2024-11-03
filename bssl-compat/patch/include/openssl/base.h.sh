@@ -64,6 +64,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef PKCS12 --sed 's/ossl_pkcs12_st/ossl_PKCS12_st/' \
   --uncomment-typedef-redef SHA_CTX --sed 's/struct ossl_sha_state_st/struct ossl_SHAstate_st/' \
   --uncomment-typedef-redef SHA256_CTX --sed 's/struct ossl_sha256_state_st/struct ossl_SHA256state_st/' \
+  --uncomment-typedef-redef SHA384_CTX --sed 's/struct ossl_sha384_state_st/struct ossl_SHA384state_st/' \
   --uncomment-typedef-redef SHA512_CTX --sed 's/struct ossl_sha512_state_st/struct ossl_SHA512state_st/' \
   --uncomment-typedef-redef MD4_CTX --sed 's/struct ossl_md4_state_st/struct ossl_MD4state_st/' \
   --uncomment-typedef-redef AES_KEY \

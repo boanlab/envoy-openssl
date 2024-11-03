@@ -22,6 +22,7 @@ envoy_cc_test_library(
         "fake_factory.h",
     ],
     external_deps = ["ssl"],
+    tags = ["nofips"],
     # This makes the test targets dependent on this target only run on the desired platform.
     # The actual feature is dependent on hardware but this mock library can run on other platforms.
     target_compatible_with = envoy_contrib_linux_x86_64_constraints(),
@@ -49,6 +50,7 @@ envoy_cc_test(
     data = [
         "//contrib/cryptomb/private_key_providers/test/test_data:certs",
     ],
+    tags = ["nofips"],
     deps = [
         ":test_fake_factory",
         "//source/common/common:random_generator_lib",
@@ -73,6 +75,7 @@ envoy_cc_test(
     data = [
         "//contrib/cryptomb/private_key_providers/test/test_data:certs",
     ],
+    tags = ["nofips"],
     deps = [
         ":test_fake_factory",
         "//source/extensions/transport_sockets/tls/private_key:private_key_manager_lib",

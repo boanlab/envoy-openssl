@@ -25,6 +25,15 @@ configure_make(
         "--enable-static",
         "--enable-samples=no",
     ],
+    copts = [
+        "-I$(BINDIR)/external/envoy/bssl-compat/copy_bssl-compat/bssl-compat/include",
+        "-I$(BINDIR)/external/envoy/bssl-compat/bssl-compat/include",
+    ],
+    tags = ["nofips"],
+    includes = [
+        "external/envoy/bssl-compat/copy_bssl-compat/bssl-compat/include",
+        "external/envoy/bssl-compat/bssl-compat/include",
+    ],
     lib_source = "@com_github_intel_qatlib//:all",
     out_static_libs = [
         "libqat.a",
@@ -33,6 +42,6 @@ configure_make(
     target_compatible_with = envoy_contrib_linux_x86_64_constraints(),
     visibility = ["//visibility:public"],
     # Use boringssl alias to select fips vs non-fips version.
-    deps = ["@envoy//bssl-compat:ssl"],
+    deps = ["//bazel:boringssl"],
     alwayslink = True,
 )

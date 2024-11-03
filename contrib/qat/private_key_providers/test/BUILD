@@ -21,6 +21,7 @@ envoy_cc_test_library(
     hdrs = [
         "fake_factory.h",
     ],
+    tags = ["nofips"],
     external_deps = ["ssl"],
     # This makes the test targets dependent on this target only run on the desired platform.
     # The actual feature is dependent on hardware but this mock library can run on other platforms.
@@ -48,6 +49,7 @@ envoy_cc_test(
     data = [
         "//contrib/qat/private_key_providers/test/test_data:certs",
     ],
+    tags = ["nofips"],
     deps = [
         ":test_fake_factory",
         "//source/common/common:random_generator_lib",

@@ -1,7 +1,4 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
-if(CMAKE_EXPORT_COMPILE_COMMANDS)
-    set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
-endif()
 
 include(FetchContent)
 include(GoogleTest)
@@ -15,7 +12,6 @@ set(OPENSSL_URL_HASH e74504ed7035295ec7062b1da16c15b57ff2a03cd2064a28d8c39458cac
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Produce a compilation database in json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -55,6 +51,11 @@ add_custom_command(DEPENDS OpenSSL
                                     --prefix ossl)
 add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h)
 add_dependencies(bssl-gen ossl-gen) # generate ossl headers before bssl headers
+
+set(FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c")
+if(EXISTS "${FILE_PATH}")
+    message(STATUS "Found file at: ${FILE_PATH}")
+endif()
 
 # custom mappings
 add_library(bssl-compat STATIC
@@ -138,6 +139,7 @@ add_library(bssl-compat STATIC
   source/RSA_private_key_from_bytes.cc
   source/RSA_public_key_from_bytes.cc
   source/RSA_sign_pss_mgf1.cc
+  source/SSL_CTX_set_ciphersuites.cc
   source/SHA256.cc
   source/SSL_add_file_cert_subjects_to_stack.cc
   source/SSL_CIPHER_get_kx_nid.cc
