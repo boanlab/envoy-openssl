@@ -1,6 +1,11 @@
 #ifndef __EXT_OPENSSL_SSL_H__
 #define __EXT_OPENSSL_SSL_H__
 
+#include <openssl/base.h> 
+#include <openssl/ssl.h>  
+#include <openssl/x509.h> 
+#include <openssl/stack.h>
+
 #include <openssl/ssl.h>
 #include <ossl/openssl/ssl.h>
 // #include "types.h"

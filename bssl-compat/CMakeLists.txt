@@ -296,6 +296,16 @@ target_add_bssl_include(bssl-compat
   include/openssl/x509_vfy.h
 )
 
+target_include_directories(bssl-compat PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/source
+    ${OPENSSL_INCLUDE_DIR}
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ext DESTINATION include
+        FILES_MATCHING PATTERN "*.h")
+
 # Case where simple mapping exists
 # this part is not what we are concerning about.
 target_add_bssl_function(bssl-compat
@@ -636,7 +646,22 @@ target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/source)
-target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
+target_link_libraries(bssl-compat PRIVATE
+    ${OPENSSL_CRYPTO_LIBRARY}
+    ${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib/liboqs.so
+    ${OPENSSL_INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so
+)
+
+target_link_directories(bssl-compat PRIVATE 
+    ${OPENSSL_LIBRARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib
+)
+
+target_include_directories(bssl-compat PRIVATE
+    ${OPENSSL_INCLUDE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/include
+)
+
 
 ################################################################################
 # Intallation
@@ -710,8 +735,27 @@ target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 # Add env variable SANITIZE_OPTIONS for optional sanitizers
 target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
-target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
-set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_LIBRARY_DIR}")
+target_link_libraries(utests-bssl-compat PRIVATE 
+    GTest::gtest_main 
+    bssl-compat
+    ${OPENSSL_INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so
+)
+target_link_directories(utests-bssl-compat PRIVATE
+    ${OPENSSL_INSTALL_DIR}/lib
+    ${OPENSSL_INSTALL_DIR}/lib64
+    ${OPENSSL_INSTALL_DIR}/lib/ossl-modules
+)
+
+set_target_properties(bssl-compat PROPERTIES
+    BUILD_RPATH "${OPENSSL_LIBRARY_DIR}:${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib"
+    INSTALL_RPATH "${OPENSSL_LIBRARY_DIR}:${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib"
+)
+
+set_target_properties(utests-bssl-compat PROPERTIES
+    BUILD_RPATH "${OPENSSL_INSTALL_DIR}/lib:${OPENSSL_INSTALL_DIR}/lib64:${OPENSSL_INSTALL_DIR}/lib/ossl-modules"
+    INSTALL_RPATH "${OPENSSL_INSTALL_DIR}/lib:${OPENSSL_INSTALL_DIR}/lib64:${OPENSSL_INSTALL_DIR}/lib/ossl-modules"
+)
+
 gtest_discover_tests(utests-bssl-compat)
 
 ################################################################################

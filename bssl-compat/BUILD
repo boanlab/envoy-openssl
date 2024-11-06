@@ -5,7 +5,7 @@ filegroup(
     srcs = glob(["**"]),
 )
 
-licenses(["notice"])  # Apache 2
+licenses(["notice"]) 
 
 cmake(
     name = "bssl-compat",
@@ -14,9 +14,14 @@ cmake(
     out_static_libs = ["libbssl-compat.a"],
     visibility = ["//visibility:public"],
     generate_crosstool_file = False,
-    env = { "Clang_ROOT" : "/usr/lib/llvm" },
-
-    build_args = [ "-j" ]
+    env = { 
+        "Clang_ROOT": "/usr/lib/llvm",
+    },
+    cache_entries = {
+        "BUILD_SHARED_LIBS": "OFF",
+        "OPENSSL_USE_STATIC_LIBS": "ON",
+    },
+    build_args = ["-j"]
 )
 
 alias(

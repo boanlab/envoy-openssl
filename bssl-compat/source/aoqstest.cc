@@ -29,6 +29,7 @@ void fetch_signature_algorithms(ossl_OSSL_PROVIDER *provider) {
    }
 }
 
+extern "C" {
 int OQSCALL() {
    // 모듈 경로 설정
    if (!ossl_OSSL_PROVIDER_set_default_search_path(NULL, "/home/boan/sds/bssl-compat-test/openssl-3.2.0/lib64/ossl-modules")) {
@@ -73,4 +74,5 @@ int OQSCALL() {
    ossl_OSSL_LIB_CTX_free(ctx);
    
    return 0;
+}
 }
