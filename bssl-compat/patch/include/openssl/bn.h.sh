@@ -11,7 +11,9 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BN_new \
   --uncomment-func-decl BN_free \
   --uncomment-func-decl BN_dup \
+  --uncomment-func-decl BN_bn2bin \
   --uncomment-func-decl BN_num_bits \
+  --uncomment-func-decl BN_num_bytes \
   --uncomment-func-decl BN_set_word \
   --uncomment-func-decl BN_bn2hex \
   --uncomment-func-decl BN_hex2bn \
@@ -19,4 +21,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BN_cmp_word \
   --uncomment-func-decl BN_ucmp \
   --uncomment-func-decl BN_bin2bn \
+  --uncomment-struct bignum_st \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(BIGNUM' \
+
+#   --uncomment-struct bignum_st \

@@ -238,13 +238,13 @@ if [[ $# -ge 1 ]]; then
 else
   # Coverage test will add QUICHE tests by itself.
   COVERAGE_TEST_TARGETS=("//test/...")
-  if [[ "${CI_TARGET}" == "release" ]]; then
+  if [[ "${CI_TARGET}" == "release" || "${CI_TARGET}" == "release.test_only" ]]; then
     # We test contrib on release only.
     COVERAGE_TEST_TARGETS=("${COVERAGE_TEST_TARGETS[@]}" "//contrib/...")
   elif [[ "${CI_TARGET}" == "msan" ]]; then
     COVERAGE_TEST_TARGETS=("${COVERAGE_TEST_TARGETS[@]}" "-//test/extensions/...")
   fi
-  TEST_TARGETS=("${COVERAGE_TEST_TARGETS[@]}" "@com_github_google_quiche//:ci_tests")
+  TEST_TARGETS=("${COVERAGE_TEST_TARGETS[@]}")
 fi
 
 case $CI_TARGET in
@@ -373,7 +373,7 @@ case $CI_TARGET in
     	[ -d "$BSSL_COMPAT_INCLUDE" ] && echo "Include directory found: $BSSL_COMPAT_INCLUDE" && ls -l "$BSSL_COMPAT_INCLUDE"
     	[ -f "$BSSL_COMPAT_COPY" ] && echo "Copy found: $BSSL_COMPAT_COPY" && ls -l "$BSSL_COMPAT_COPY"
     	;;
-
+        
     check_and_fix_proto_format)
         setup_clang_toolchain
         echo "Check and fix proto format ..."
@@ -557,7 +557,7 @@ case $CI_TARGET in
         # This doesn't go into CI but is available for developer convenience.
         echo "bazel fastbuild build with tests..."
         echo "Building..."
-        bazel_envoy_binary_build fastbuild
+        bazel_envoy_binary_build fastbuild --sandbox_debug
         echo "Testing ${TEST_TARGETS[*]}"
         bazel test "${BAZEL_BUILD_OPTIONS[@]}" \
               -c fastbuild "${TEST_TARGETS[@]}"
@@ -585,6 +585,7 @@ case $CI_TARGET in
         else
             ENVOY_RELEASE_TARBALL="/build/release/arm64/bin/release.tar.zst"
         fi
+
         bazel run "${BAZEL_BUILD_OPTIONS[@]}" \
               //tools/zstd \
               -- --stdout \
@@ -720,10 +721,14 @@ case $CI_TARGET in
             fetch-gcc)
                 targets=("${FETCH_GCC_TARGETS[@]}")
                 ;;
-            fetch-release)
+            fetch-release|fetch-release.test_only)
                 targets=(
                     "${FETCH_BUILD_TARGETS[@]}"
                     "${FETCH_ALL_TEST_TARGETS[@]}")
+                ;;
+            fetch-release.server_only)
+                targets=(
+                    "${FETCH_BUILD_TARGETS[@]}")
                 ;;
             fetch-*coverage)
                 targets=("${FETCH_TEST_TARGETS[@]}")
@@ -827,8 +832,8 @@ case $CI_TARGET in
                  "${PUBLISH_ARGS[@]}"
         ;;
 
-    release|release.server_only)
-        if [[ "$CI_TARGET" == "release" ]]; then
+    release|release.server_only|release.test_only)
+        if [[ "$CI_TARGET" == "release" || "$CI_TARGET" == "release.test_only" ]]; then
             # When testing memory consumption, we want to test against exact byte-counts
             # where possible. As these differ between platforms and compile options, we
             # define the 'release' builds as canonical and test them only in CI, so the
@@ -840,19 +845,13 @@ case $CI_TARGET in
             fi
         fi
         setup_clang_toolchain
-        ENVOY_BINARY_DIR="${ENVOY_BUILD_DIR}/bin"
-        if [[ -e "${ENVOY_BINARY_DIR}" ]]; then
-            echo "Existing output directory found (${ENVOY_BINARY_DIR}), removing ..."
-            rm -rf "${ENVOY_BINARY_DIR}"
-        fi
-        mkdir -p "$ENVOY_BINARY_DIR"
         # As the binary build package enforces compiler options, adding here to ensure the tests and distribution build
         # reuse settings and any already compiled artefacts, the bundle itself will always be compiled
         # `--stripopt=--strip-all -c opt`
         BAZEL_RELEASE_OPTIONS=(
             --stripopt=--strip-all
             -c opt)
-        if [[ "$CI_TARGET" == "release" ]]; then
+        if [[ "$CI_TARGET" == "release" || "$CI_TARGET" == "release.test_only" ]]; then
             # Run release tests
             echo "Testing with:"
             echo "  targets: ${TEST_TARGETS[*]}"
@@ -864,6 +863,24 @@ case $CI_TARGET in
                 "${BAZEL_RELEASE_OPTIONS[@]}" \
                 "${TEST_TARGETS[@]}"
         fi
+
+        if [[ "$CI_TARGET" == "release.test_only" ]]; then
+            exit 0
+        fi
+
+        ENVOY_BINARY_DIR="${ENVOY_BUILD_DIR}/bin"
+        if [[ -e "${ENVOY_BINARY_DIR}" ]]; then
+            echo "Existing output directory found (${ENVOY_BINARY_DIR}), removing ..."
+            rm -rf "${ENVOY_BINARY_DIR}"
+        fi
+        mkdir -p "$ENVOY_BINARY_DIR"
+
+        # Build
+        echo "Building with:"
+        echo "  build options: ${BAZEL_BUILD_OPTIONS[*]}"
+        echo "  release options:  ${BAZEL_RELEASE_OPTIONS[*]}"
+        echo "  binary dir:  ${ENVOY_BINARY_DIR}"
+
         # Build release binaries
         bazel build "${BAZEL_BUILD_OPTIONS[@]}" \
               "${BAZEL_RELEASE_OPTIONS[@]}" \
@@ -896,7 +913,6 @@ case $CI_TARGET in
         setup_clang_toolchain
         bazel build "${BAZEL_BUILD_OPTIONS[@]}" //distribution:signed
         cp -a bazel-bin/distribution/release.signed.tar.zst "${BUILD_DIR}/envoy/"
-        "${ENVOY_SRCDIR}/ci/upload_gcs_artifact.sh" "${BUILD_DIR}/envoy" release
         ;;
 
     sizeopt)

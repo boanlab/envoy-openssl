@@ -1,9 +1,12 @@
 workspace(name = "envoy")
 
-local_repository(
+new_local_repository(
     name = "bssl-compat",
-    path = "bssl-compat",
+    path = "/usr/local/lib",
+    build_file = "//bssl-compat:BUILD"
 )
+
+
 
 load("//bazel:api_binding.bzl", "envoy_api_binding")
 

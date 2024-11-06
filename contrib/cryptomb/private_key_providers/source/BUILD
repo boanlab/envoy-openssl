@@ -22,9 +22,18 @@ envoy_cmake(
     defines = [
         "OPENSSL_USE_STATIC_LIBS=TRUE",
     ],
+    copts = [
+        "-I$(BINDIR)/external/envoy/bssl-compat/copy_bssl-compat/bssl-compat/include",
+        "-I$(BINDIR)/external/envoy/bssl-compat/bssl-compat/include",
+    ],
+    includes = [
+        "external/envoy/bssl-compat/copy_bssl-compat/bssl-compat/include",
+        "external/envoy/bssl-compat/bssl-compat/include",
+    ],
+    tags = ["nofips"],
     lib_source = "@com_github_intel_ipp_crypto_crypto_mb//:all",
     out_static_libs = ["libcrypto_mb.a"],
-    tags = ["skip_on_windows"],
+    # tags = ["skip_on_windows"],
     target_compatible_with = envoy_contrib_linux_x86_64_constraints(),
     visibility = ["//visibility:private"],
     working_directory = "sources/ippcp/crypto_mb",
@@ -34,24 +43,29 @@ envoy_cmake(
 
 envoy_cc_library(
     name = "ipp_crypto_wrapper_lib",
-    hdrs = ["ipp_crypto.h"] + select({
+    hdrs = [
+    #    "ipp_crypto.h"
+    ] + select({
         "//bazel:linux_x86_64": [
-            "ipp_crypto_impl.h",
+    #        "ipp_crypto_impl.h",
         ],
         "//conditions:default": [
         ],
     }),
     defines = select({
-        "//bazel:linux_x86_64": [],
+        "//bazel:linux_x86_64": [
+            "IPP_CRYPTO_DISABLED=1",
+        ],
         "//conditions:default": [
             "IPP_CRYPTO_DISABLED=1",
         ],
     }),
+    tags = ["nofips"],
     external_deps = ["ssl"],
     repository = "@envoy",
     deps = select({
         "//bazel:linux_x86_64": [
-            ":ipp-crypto",
+   #         ":ipp-crypto",
         ],
         "//conditions:default": [],
     }),
@@ -60,70 +74,81 @@ envoy_cc_library(
 envoy_cc_library(
     name = "cryptomb_private_key_provider_lib",
     srcs = [
-        "cryptomb_private_key_provider.cc",
+    #    "cryptomb_private_key_provider.cc",
     ],
     hdrs = [
-        "cryptomb_private_key_provider.h",
+    #    "cryptomb_private_key_provider.h",
     ],
+    tags = ["nofips"],
     external_deps = ["ssl"],
-    repository = "@envoy",
     visibility = ["//visibility:public"],
     deps = [
-        ":cryptomb_stats_lib",
-        ":ipp_crypto_wrapper_lib",
-        "//envoy/api:api_interface",
-        "//envoy/event:dispatcher_interface",
-        "//envoy/registry",
-        "//envoy/server:transport_socket_config_interface",
-        "//envoy/singleton:manager_interface",
-        "//envoy/ssl/private_key:private_key_config_interface",
-        "//envoy/ssl/private_key:private_key_interface",
-        "//source/common/common:logger_lib",
-        "//source/common/common:thread_lib",
-        "//source/common/config:datasource_lib",
-        "@envoy_api//contrib/envoy/extensions/private_key_providers/cryptomb/v3alpha:pkg_cc_proto",
+    #    ":cryptomb_stats_lib",
+    #    ":ipp_crypto_wrapper_lib",
+    #    "//envoy/api:api_interface",
+    #    "//envoy/event:dispatcher_interface",
+    #    "//envoy/registry",
+    #    "//envoy/server:transport_socket_config_interface",
+    #    "//envoy/singleton:manager_interface",
+    #    "//envoy/ssl/private_key:private_key_config_interface",
+    #    "//envoy/ssl/private_key:private_key_interface",
+    #    "//source/common/common:logger_lib",
+    #    "//source/common/common:thread_lib",
+    #    "//source/common/config:datasource_lib",
+    #    "@envoy_api//contrib/envoy/extensions/private_key_providers/cryptomb/v3alpha:pkg_cc_proto",
     ],
 )
+
+#     repository = "@envoy",
 
 envoy_cc_library(
     name = "cryptomb_stats_lib",
     srcs = [
-        "cryptomb_stats.cc",
+    #    "cryptomb_stats.cc",
     ],
     hdrs = [
-        "cryptomb_stats.h",
+    #    "cryptomb_stats.h",
     ],
+    tags = ["nofips"],
     deps = [
-        "//envoy/stats:stats_interface",
-        "//envoy/stats:stats_macros",
-        "//source/common/stats:symbol_table_lib",
-        "//source/common/stats:utility_lib",
+    #    "//envoy/stats:stats_interface",
+    #    "//envoy/stats:stats_macros",
+    #    "//source/common/stats:symbol_table_lib",
+    #    "//source/common/stats:utility_lib",
     ],
 )
 
 envoy_cc_contrib_extension(
     name = "config",
-    srcs = ["config.cc"],
-    hdrs = ["config.h"],
+    srcs = [
+    #    "config.cc"
+    ],
+    hdrs = 
+    [
+    #    "config.h"
+    ],
     defines = select({
-        "//bazel:linux_x86_64": [],
+        "//bazel:linux_x86_64": [
+            "IPP_CRYPTO_DISABLED=1",
+        ],
         "//conditions:default": [
             "IPP_CRYPTO_DISABLED=1",
         ],
     }),
+    tags = ["nofips"],
     deps = [
-        "//envoy/registry",
-        "//envoy/ssl/private_key:private_key_config_interface",
-        "//envoy/ssl/private_key:private_key_interface",
-        "//source/common/common:logger_lib",
-        "//source/common/config:utility_lib",
-        "//source/common/protobuf:utility_lib",
-        "@envoy_api//contrib/envoy/extensions/private_key_providers/cryptomb/v3alpha:pkg_cc_proto",
-        "@envoy_api//envoy/extensions/transport_sockets/tls/v3:pkg_cc_proto",
+    #    "//envoy/registry",
+    #    "//envoy/ssl/private_key:private_key_config_interface",
+    #    "//envoy/ssl/private_key:private_key_interface",
+    #    "//source/common/common:logger_lib",
+    #    "//source/common/config:utility_lib",
+    #    "//source/common/protobuf:utility_lib",
+    #    "@envoy_api//contrib/envoy/extensions/private_key_providers/cryptomb/v3alpha:pkg_cc_proto",
+    #    "@envoy_api//envoy/extensions/transport_sockets/tls/v3:pkg_cc_proto",
     ] + select({
         "//bazel:linux_x86_64": [
-            ":cryptomb_private_key_provider_lib",
-            ":ipp_crypto_wrapper_lib",
+        #    ":cryptomb_private_key_provider_lib",
+        #    ":ipp_crypto_wrapper_lib",
         ],
         "//conditions:default": [
         ],

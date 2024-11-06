@@ -31,13 +31,29 @@ project(bssl-compat VERSION 0.1 LANGUAGES C CXX)
 include(cmake/boringssl.cmake)
 include(cmake/openssl.cmake)
 
-add_subdirectory(prefixer)
-add_custom_command(DEPENDS prefixer OpenSSL
+# add_subdirectory(prefixer)
+# add_custom_command(DEPENDS prefixer OpenSSL
+#                    COMMENT "Prefixing OpenSSL files"
+#                    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c
+#                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h
+#                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl/openssl/err.h
+#                    COMMAND prefixer --src-path "${OPENSSL_INCLUDE_DIR}"
+#                                     --src-incl "openssl/*.h"
+#                                     --src-skip "openssl/asn1_mac.h"
+#                                     --src-skip "openssl/opensslconf-*.h"
+#                                     --output "${CMAKE_CURRENT_BINARY_DIR}"
+#                                     --prefix ossl)
+
+# add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h)
+# add_dependencies(bssl-gen ossl-gen) # generate ossl headers before bssl headers
+
+set(prefixer "${CMAKE_CURRENT_SOURCE_DIR}/prefixer/prefixer" CACHE PATH ".")
+add_custom_command(DEPENDS OpenSSL
                    COMMENT "Prefixing OpenSSL files"
                    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl/openssl/err.h
-                   COMMAND prefixer --src-path "${OPENSSL_INCLUDE_DIR}"
+                   COMMAND ${prefixer} --src-path "${OPENSSL_INCLUDE_DIR}"
                                     --src-incl "openssl/*.h"
                                     --src-skip "openssl/asn1_mac.h"
                                     --src-skip "openssl/opensslconf-*.h"
@@ -45,6 +61,11 @@ add_custom_command(DEPENDS prefixer OpenSSL
                                     --prefix ossl)
 add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h)
 add_dependencies(bssl-gen ossl-gen) # generate ossl headers before bssl headers
+
+set(FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c")
+if(EXISTS "${FILE_PATH}")
+    message(STATUS "Found file at: ${FILE_PATH}")
+endif()
 
 # custom mappings
 add_library(bssl-compat STATIC
@@ -129,6 +150,7 @@ add_library(bssl-compat STATIC
   source/RSA_private_key_from_bytes.cc
   source/RSA_public_key_from_bytes.cc
   source/RSA_sign_pss_mgf1.cc
+  source/SSL_CTX_set_ciphersuites.cc
   source/SHA256.cc
   source/SSL_add_file_cert_subjects_to_stack.cc
   source/SSL_CIPHER_get_kx_nid.cc
@@ -151,7 +173,6 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_select_certificate_cb.cc
   source/SSL_CTX_set_select_certificate_cb.h
   source/SSL_CTX_set_strict_cipher_list.cc
-  source/SSL_CTX_set_ciphersuites.cc
   source/SSL_CTX_set_tlsext_servername_callback.cc
   source/SSL_CTX_set_tlsext_status_cb.c
   source/SSL_CTX_set_tlsext_ticket_key_cb.cc
@@ -307,7 +328,6 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ext DESTINATION include
         FILES_MATCHING PATTERN "*.h")
 
 # Case where simple mapping exists
-# this part is not what we are concerning about.
 target_add_bssl_function(bssl-compat
   ASN1_IA5STRING_free
   ASN1_IA5STRING_new
