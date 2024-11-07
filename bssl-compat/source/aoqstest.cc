@@ -20,7 +20,6 @@ void fetch_signature_algorithms(ossl_OSSL_PROVIDER *provider) {
            printf("- %s\n", alg->algorithm_names);
        }
 
-       // method 해제
        if (method)
            ossl_OSSL_PROVIDER_unquery_operation(provider, ossl_OSSL_OP_SIGNATURE, NULL);
    } else {
@@ -31,9 +30,15 @@ void fetch_signature_algorithms(ossl_OSSL_PROVIDER *provider) {
 
 extern "C" {
 int OQSCALL() {
+   // 환경 변수에서 모듈 경로 가져오기
+   const char* module_path = getenv("OPENSSL_MODULES");
+   if (!module_path) {
+       module_path = OPENSSL_MODULES_DIR;  // CMake에서 정의된 기본 경로 사용
+   }
+
    // 모듈 경로 설정
-   if (!ossl_OSSL_PROVIDER_set_default_search_path(NULL, "/home/boan/sds/bssl-compat-test/openssl-3.2.0/lib64/ossl-modules")) {
-       printf("Failed to set module path\n");
+   if (!ossl_OSSL_PROVIDER_set_default_search_path(NULL, module_path)) {
+       printf("Failed to set module path: %s\n", module_path);
        ossl_ERR_print_errors_fp(stderr);
        return 1;
    }

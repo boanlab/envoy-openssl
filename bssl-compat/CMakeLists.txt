@@ -668,13 +668,13 @@ target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/includ
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/source)
 target_link_libraries(bssl-compat PRIVATE
     ${OPENSSL_CRYPTO_LIBRARY}
-    ${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib/liboqs.so
-    ${OPENSSL_INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so
+    ${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib64/liboqs.so
+    dl
 )
 
 target_link_directories(bssl-compat PRIVATE 
     ${OPENSSL_LIBRARY_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib
+    ${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib64
 )
 
 target_include_directories(bssl-compat PRIVATE
@@ -750,30 +750,61 @@ set(utests-source-list
 ################################################################################
 # Unit Tests built on bssl-compat
 ################################################################################
+
 add_executable(utests-bssl-compat ${utests-source-list})
 target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+
+add_definitions(-DOPENSSL_MODULES_DIR="${OPENSSL_MODULES_DIR}")
+
+# Add aoqstest.cc to source list
+target_sources(utests-bssl-compat PRIVATE
+    source/aoqstest.cc
+)
+
+# Add dependency
+add_dependencies(utests-bssl-compat libOQS OpenSSL OQS-Provider)
+
+# Remove any automatic linking of oqsprovider
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed -Wl,--allow-shlib-undefined")
+
 # Add env variable SANITIZE_OPTIONS for optional sanitizers
-target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
+target_link_options(utests-bssl-compat PRIVATE 
+    "$ENV{SANITIZE_OPTIONS}"
+    "-Wl,--no-as-needed"
+    "-Wl,--allow-shlib-undefined"
+)
+
+# Get LIBOQS library directory
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    set(LIBOQS_LIB_DIR "lib64")
+else()
+    set(LIBOQS_LIB_DIR "lib")
+endif()
+
+# Link libraries
 target_link_libraries(utests-bssl-compat PRIVATE 
     GTest::gtest_main 
     bssl-compat
-    ${OPENSSL_INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so
-)
-target_link_directories(utests-bssl-compat PRIVATE
-    ${OPENSSL_INSTALL_DIR}/lib
-    ${OPENSSL_INSTALL_DIR}/lib64
-    ${OPENSSL_INSTALL_DIR}/lib/ossl-modules
+    dl
 )
 
-set_target_properties(bssl-compat PROPERTIES
-    BUILD_RPATH "${OPENSSL_LIBRARY_DIR}:${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib"
-    INSTALL_RPATH "${OPENSSL_LIBRARY_DIR}:${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib"
-)
-
+# Set RPATH and other properties
 set_target_properties(utests-bssl-compat PROPERTIES
-    BUILD_RPATH "${OPENSSL_INSTALL_DIR}/lib:${OPENSSL_INSTALL_DIR}/lib64:${OPENSSL_INSTALL_DIR}/lib/ossl-modules"
-    INSTALL_RPATH "${OPENSSL_INSTALL_DIR}/lib:${OPENSSL_INSTALL_DIR}/lib64:${OPENSSL_INSTALL_DIR}/lib/ossl-modules"
+    BUILD_RPATH "${OPENSSL_LIBRARY_DIR}:${OPENSSL_MODULES_DIR}:${LIBOQS_INSTALL_DIR}/lib64"
+    INSTALL_RPATH "${OPENSSL_LIBRARY_DIR}:${OPENSSL_MODULES_DIR}:${LIBOQS_INSTALL_DIR}/lib64"
+)
+
+# Set properties for bssl-compat
+set_target_properties(bssl-compat PROPERTIES
+    BUILD_RPATH "${OPENSSL_LIBRARY_DIR}:${OPENSSL_MODULES_DIR}:${LIBOQS_INSTALL_DIR}/${LIBOQS_LIB_DIR}"
+    INSTALL_RPATH "${OPENSSL_LIBRARY_DIR}:${OPENSSL_MODULES_DIR}:${LIBOQS_INSTALL_DIR}/${LIBOQS_LIB_DIR}"
+    LINK_OPTIONS "-Wl,--no-as-needed;-Wl,--allow-shlib-undefined"
+)
+
+# Set environment for tests
+set_tests_properties(${ALL_TESTS} PROPERTIES
+    ENVIRONMENT "OPENSSL_MODULES=${OPENSSL_MODULES_DIR}"
 )
 
 gtest_discover_tests(utests-bssl-compat)
