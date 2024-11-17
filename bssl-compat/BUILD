@@ -5,22 +5,22 @@ filegroup(
     srcs = glob(["**"]),
 )
 
-licenses(["notice"]) 
+licenses(["notice"])  # Apache 2
 
+# Omit point : "OPENSSL_USE_STATIC_LIBS: OFF"
 cmake(
     name = "bssl-compat",
     lib_source = ":srcs",
-    out_shared_libs = [],
-    out_static_libs = ["libbssl-compat.a"],
+    out_shared_libs = ["libbssl-compat.so"],
+    out_static_libs = [],
     visibility = ["//visibility:public"],
     generate_crosstool_file = False,
-    env = { 
-        "Clang_ROOT": "/usr/lib/llvm",
-    },
+    env = { "Clang_ROOT": "/usr/lib/llvm" },
     cache_entries = {
-        "BUILD_SHARED_LIBS": "OFF",
-        "OPENSSL_USE_STATIC_LIBS": "ON",
+        "BUILD_SHARED_LIBS": "ON",
+        "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
     },
+    linkopts = ["-ldl"],
     build_args = ["-j"]
 )
 

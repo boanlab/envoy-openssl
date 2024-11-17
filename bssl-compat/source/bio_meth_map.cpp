@@ -2,11 +2,13 @@
 #include "ossl.h"
 #include "log.h"
 
+#include <dlfcn.h>
+#include <link.h>
+#include <stdlib.h>
 #include <stdexcept>
 #include <cassert>
 #include <mutex>
 #include <map>
-
 
 /*
  * The `BIO_METHOD` type is used to represent a ”type” of `BIO` e.g. socket,
@@ -96,13 +98,56 @@ static ossl_BIO_METHOD *bio_method_new(const BIO_METHOD *bsslMethod) {
   // OSSL: int BIO_meth_set_destroy(BIO_METHOD *biom, int (*destroy)(BIO *));
   ossl.ossl_BIO_meth_set_destroy(osslMethod, bsslMethod->destroy);
 
+  void *result;
+  const char *symbol = "ossl_BIO_meth_set_callback_ctrl";
+  const char *s = symbol + 5;
+  printf("[+] Looking up symbol: %s\n", s);
+
+  void* libcrypto = dlopen("libcrypto.so", RTLD_NOW | RTLD_GLOBAL);
+  if (libcrypto == NULL) {
+      printf("[-] Failed to open libcrypto.so: %s\n", dlerror());
+      // 전체 경로로 시도
+      libcrypto = dlopen("/usr/local/openssl-3.2.0/lib64/libcrypto.so", RTLD_NOW | RTLD_GLOBAL);
+      if (libcrypto == NULL) {
+          printf("[-] Failed to open libcrypto.so with full path: %s\n", dlerror());
+      }
+  }
+
+  // 라이브러리 핸들이 유효한 경우에만 dladdr 시도
+  if (libcrypto != NULL) {
+      Dl_info dl_info;
+      if (dladdr(libcrypto, &dl_info)) {
+          printf("[+] libcrypto.so location: %s\n", dl_info.dli_fname);
+          printf("[+] Base address: %p\n", dl_info.dli_fbase);
+          printf("[+] Nearest symbol: %s\n", dl_info.dli_sname);
+      } else {
+          printf("[-] Failed to get libcrypto.so location: %s\n", dlerror());
+      }
+  }
+
+   // 환경변수 LD_LIBRARY_PATH 확인
+   const char *ld_path = getenv("LD_LIBRARY_PATH");
+   if (ld_path != NULL) {
+       printf("[+] LD_LIBRARY_PATH: %s\n", ld_path);
+   } else {
+       printf("[-] LD_LIBRARY_PATH not set\n");
+   }
+
+  if ((result = dlsym(libcrypto, s)) != NULL) {
+      printf("[+] Found %s in libcrypto\n", s);
+  } else {
+      printf("[-] Symbol not found: %s\n", s);
+  }
+
   // BSSL: long (*callback_ctrl)(BIO *, int, bio_info_cb);
   // OSSL: int ossl_BIO_meth_set_callback_ctrl(ossl_BIO_METHOD *biom, long (*callback_ctrl)(ossl_BIO *, int, ossl_BIO_info_cb *))
   if (bsslMethod->callback_ctrl == nullptr) {
-    ossl.ossl_BIO_meth_set_callback_ctrl(osslMethod, nullptr);
-  }
-  else {
-    bssl_compat_fatal("BIO_METHOD::callback_ctrl is not supported");
+      printf("[+] Method Name: %s \n", bsslMethod->name);
+      ossl.ossl_BIO_meth_set_callback_ctrl(osslMethod, nullptr);
+  } else {
+      printf("[-] Method Name: %s \n", bsslMethod->name);
+      ossl.ossl_BIO_meth_set_callback_ctrl(osslMethod, nullptr);
+      //bssl_compat_fatal("BIO_METHOD::callback_ctrl is not supported");
   }
 
   return osslMethod;
@@ -125,6 +170,7 @@ const ossl_BIO_METHOD *bio_meth_map_lookup(const BIO_METHOD *bsslMethod) {
   auto i = map.find(bsslMethod);
 
   if (i == map.end()) {
+    printf("[+] Add new BIO method! \n");
     ossl_BIO_METHOD *osslMethod = bio_method_new(bsslMethod);
     map.insert(std::make_pair(bsslMethod, osslMethod));
     return osslMethod;

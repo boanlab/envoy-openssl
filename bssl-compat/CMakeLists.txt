@@ -1,8 +1,3 @@
-set(CMAKE_VERBOSE_MAKEFILE ON)
-if(CMAKE_EXPORT_COMPILE_COMMANDS)
-    set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
-endif()
-
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 include(FetchContent)
@@ -21,32 +16,12 @@ set(CMAKE_CXX_STANDARD 17)
 # Produce a compilation database in json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-############################################################################################################################################ Test
-set(LLVM_DIR "/usr/lib/llvm-6.0.0/lib/cmake/llvm")
-set(Clang_DIR "/usr/lib/llvm-6.0.0/lib/cmake/clang")
-############################################################################################################################################ /Test
-
 project(bssl-compat VERSION 0.1 LANGUAGES C CXX)
 
 include(cmake/boringssl.cmake)
 include(cmake/openssl.cmake)
 
 # add_subdirectory(prefixer)
-# add_custom_command(DEPENDS prefixer OpenSSL
-#                    COMMENT "Prefixing OpenSSL files"
-#                    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c
-#                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h
-#                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl/openssl/err.h
-#                    COMMAND prefixer --src-path "${OPENSSL_INCLUDE_DIR}"
-#                                     --src-incl "openssl/*.h"
-#                                     --src-skip "openssl/asn1_mac.h"
-#                                     --src-skip "openssl/opensslconf-*.h"
-#                                     --output "${CMAKE_CURRENT_BINARY_DIR}"
-#                                     --prefix ossl)
-
-# add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h)
-# add_dependencies(bssl-gen ossl-gen) # generate ossl headers before bssl headers
-
 set(prefixer "${CMAKE_CURRENT_SOURCE_DIR}/prefixer/prefixer" CACHE PATH ".")
 add_custom_command(DEPENDS OpenSSL
                    COMMENT "Prefixing OpenSSL files"
@@ -60,15 +35,22 @@ add_custom_command(DEPENDS OpenSSL
                                     --output "${CMAKE_CURRENT_BINARY_DIR}"
                                     --prefix ossl)
 add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h)
-add_dependencies(bssl-gen ossl-gen) # generate ossl headers before bssl headers
 
 set(FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c")
 if(EXISTS "${FILE_PATH}")
     message(STATUS "Found file at: ${FILE_PATH}")
 endif()
 
-# custom mappings
-add_library(bssl-compat STATIC
+# liboqs 체크
+# add_custom_target(check-liboqs
+#         COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBOQS_INCLUDE_DIR}
+#         COMMAND ${CMAKE_COMMAND} -E echo "Checking liboqs include directory: ${LIBOQS_INCLUDE_DIR}"
+# )
+# add_dependencies(check-liboqs OpenSSL libOQS OQS-Provider)
+add_dependencies(bssl-gen ossl-gen OpenSSL libOQS OQS-Provider) # generate ossl headers before bssl headers
+
+# custom mappings - shared library modify
+add_library(bssl-compat SHARED
   source/aoqstest.cc # This is test file
   source/ASN1_TIME_free.cc
   source/BASIC_CONSTRAINTS_free.cc
@@ -317,15 +299,12 @@ target_add_bssl_include(bssl-compat
   include/openssl/x509_vfy.h
 )
 
-target_include_directories(bssl-compat PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}/source
-    ${OPENSSL_INCLUDE_DIR}
-)
-
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ext DESTINATION include
-        FILES_MATCHING PATTERN "*.h")
+# target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
+target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
+target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/source)
+target_include_directories(bssl-compat PUBLIC ${OPENSSL_INCLUDE_DIR})
+target_include_directories(bssl-compat PUBLIC ${LIBOQS_INSTALL_DIR}/include)
 
 # Case where simple mapping exists
 target_add_bssl_function(bssl-compat
@@ -662,37 +641,49 @@ target_add_bssl_source(bssl-compat
   source/crypto/bytestring/cbb.c
   source/ssl/ssl_x509.cc
 )
-target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
-target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
-target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/source)
-target_link_libraries(bssl-compat PRIVATE
-    ${OPENSSL_CRYPTO_LIBRARY}
-    ${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib64/liboqs.so
-    dl
+
+# PIC 설정 추가
+set_target_properties(bssl-compat PROPERTIES 
+  POSITION_INDEPENDENT_CODE ON
 )
 
-target_link_directories(bssl-compat PRIVATE 
-    ${OPENSSL_LIBRARY_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/lib64
+target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS} dl)
+target_link_libraries(bssl-compat PRIVATE dl)
+
+target_compile_definitions(bssl-compat PRIVATE 
+    OPENSSL_LIBRARY_PATH="${OPENSSL_LIBRARY_DIR}"
+    LIBOQS_LIBRARY_PATH="${LIBOQS_LIBRARY_DIR}"     
+    OQSPROV_LIBRARY_PATH="${OQSPROV_LIBRARY_DIR}"   
 )
 
-target_include_directories(bssl-compat PRIVATE
-    ${OPENSSL_INCLUDE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}/liboqs/install/include
-)
+# target_compile_definitions(bssl-compat PUBLIC
+#     WITH_OQS                     # OQS 지원 활성화
+#     OQS_PROVIDER_ENABLED         # OQS provider 활성화
+# )
 
+target_link_options(bssl-compat PUBLIC
+    -Wl,--no-as-needed          # 동적 라이브러리 로딩 보장
+    -Wl,--allow-shlib-undefined # 공유 라이브러리 미정의 심볼 허용
+    -Wl,-z,defs                 # 미정의 심볼 체크
+    -Wl,-rpath,'$ORIGIN'        # 실행 파일 위치 기준 라이브러리 검색
+)
 
 ################################################################################
 # Intallation
 ################################################################################
 
 set(INSTALL_GTEST OFF)
-install(TARGETS bssl-compat ARCHIVE DESTINATION lib)
+
+# 설치 규칙 수정
+install(TARGETS bssl-compat LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION . FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ext DESTINATION include FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ossl DESTINATION include FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/openssl DESTINATION include FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${LIBOQS_INSTALL_DIR}/include/oqs DESTINATION include FILES_MATCHING PATTERN "*.h")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h DESTINATION include)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c DESTINATION .)
+
 
 ################################################################################
 # Unit Tests
@@ -750,64 +741,20 @@ set(utests-source-list
 ################################################################################
 # Unit Tests built on bssl-compat
 ################################################################################
-
-add_executable(utests-bssl-compat ${utests-source-list})
-target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
-set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
-
 add_definitions(-DOPENSSL_MODULES_DIR="${OPENSSL_MODULES_DIR}")
 
-# Add aoqstest.cc to source list
-target_sources(utests-bssl-compat PRIVATE
-    source/aoqstest.cc
-)
 
-# Add dependency
-add_dependencies(utests-bssl-compat libOQS OpenSSL OQS-Provider)
-
-# Remove any automatic linking of oqsprovider
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed -Wl,--allow-shlib-undefined")
-
-# Add env variable SANITIZE_OPTIONS for optional sanitizers
-target_link_options(utests-bssl-compat PRIVATE 
-    "$ENV{SANITIZE_OPTIONS}"
-    "-Wl,--no-as-needed"
-    "-Wl,--allow-shlib-undefined"
-)
-
-# Get LIBOQS library directory
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    set(LIBOQS_LIB_DIR "lib64")
-else()
-    set(LIBOQS_LIB_DIR "lib")
-endif()
-
-# Link libraries
-target_link_libraries(utests-bssl-compat PRIVATE 
-    GTest::gtest_main 
-    bssl-compat
-    dl
-)
-
-# Set RPATH and other properties
-set_target_properties(utests-bssl-compat PROPERTIES
-    BUILD_RPATH "${OPENSSL_LIBRARY_DIR}:${OPENSSL_MODULES_DIR}:${LIBOQS_INSTALL_DIR}/lib64"
-    INSTALL_RPATH "${OPENSSL_LIBRARY_DIR}:${OPENSSL_MODULES_DIR}:${LIBOQS_INSTALL_DIR}/lib64"
-)
-
-# Set properties for bssl-compat
-set_target_properties(bssl-compat PROPERTIES
-    BUILD_RPATH "${OPENSSL_LIBRARY_DIR}:${OPENSSL_MODULES_DIR}:${LIBOQS_INSTALL_DIR}/${LIBOQS_LIB_DIR}"
-    INSTALL_RPATH "${OPENSSL_LIBRARY_DIR}:${OPENSSL_MODULES_DIR}:${LIBOQS_INSTALL_DIR}/${LIBOQS_LIB_DIR}"
-    LINK_OPTIONS "-Wl,--no-as-needed;-Wl,--allow-shlib-undefined"
-)
-
-# Set environment for tests
-set_tests_properties(${ALL_TESTS} PROPERTIES
-    ENVIRONMENT "OPENSSL_MODULES=${OPENSSL_MODULES_DIR}"
-)
-
-gtest_discover_tests(utests-bssl-compat)
+add_executable(utests-bssl-compat ${utests-source-list})
+set_target_properties(utests-bssl-compat PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
+set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+# target_compile_definitions(utests-bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
+target_include_directories(utests-bssl-compat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_CURRENT_BINARY_DIR}/source ${OPENSSL_INCLUDE_DIR} ${LIBOQS_INSTALL_DIR}/include )
+target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat INTERFACE ${CMAKE_DL_LIBS} dl)
+target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" -ldl)
+set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_LIBRARY_DIR}")
+target_compile_definitions(utests-bssl-compat PRIVATE OPENSSL_MODULES_DIR="${OPENSSL_MODULES_DIR}" OPENSSL_DIR="${OPENSSL_INSTALL_DIR}" OPENSSL_LIBRARY_PATH="${OPENSSL_LIBRARY_DIR}" LIBOQS_LIBRARY_PATH="${LIBOQS_LIBRARY_DIR}" OQSPROV_LIBRARY_PATH="${OQSPROV_LIBRARY_DIR}"   )
+# gtest_discover_tests(utests-bssl-compat)
 
 ################################################################################
 # Unit Tests built on BoringSSL

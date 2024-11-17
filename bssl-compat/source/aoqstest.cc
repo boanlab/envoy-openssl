@@ -6,6 +6,7 @@
 #include <ossl/openssl/params.h>
 #include <ossl/openssl/err.h>
 #include <ossl/openssl/types.h>
+#include <oqs/oqs.h>
 
 void fetch_signature_algorithms(ossl_OSSL_PROVIDER *provider) {
    int method = 0;

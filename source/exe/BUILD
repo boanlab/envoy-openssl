@@ -22,14 +22,28 @@ alias(
     actual = ":envoy-static",
 )
 
+
+# envoy_cc_binary(
+#     name = "envoy-static",
+#     features = select({
+#         "//bazel:windows_opt_build": ["generate_pdb_file"],
+#         "//conditions:default": [],
+#     }),
+#     stamped = True,
+#     deps = [":envoy_main_entry_lib"],
+# )
+
+
 envoy_cc_binary(
     name = "envoy-static",
-    features = select({
-        "//bazel:windows_opt_build": ["generate_pdb_file"],
-        "//conditions:default": [],
-    }),
-    stamped = True,
-    deps = [":envoy_main_entry_lib"],
+    deps = [
+        "//source/exe:envoy_main_entry_lib",
+        "@envoy//bssl-compat:ssl",
+        "@envoy//bssl-compat:crypto"
+    ],
+    linkopts = [
+        "-Wl,-rpath,$$ORIGIN/lib",  # 런타임 라이브러리 검색 경로
+    ],
 )
 
 envoy_cc_library(
