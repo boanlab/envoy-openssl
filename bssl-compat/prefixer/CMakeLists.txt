@@ -1,6 +1,13 @@
+cmake_minimum_required(VERSION 3.25)
+
 project(prefixer)
 
 # https://llvm.org/docs/CMake.html#embedding-llvm-in-your-project
+
+# Add C++ 17 configuration
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Clang REQUIRED CONFIG)
 find_package(LLVM REQUIRED CONFIG)
@@ -17,3 +24,5 @@ target_include_directories(prefixer PRIVATE "${LLVM_INCLUDE_DIRS}")
 target_link_directories(prefixer PRIVATE "${LLVM_LIBRARY_DIRS}")
 target_link_libraries(prefixer PRIVATE clang-cpp $<$<BOOL:${LLVM_LINK_LLVM_DYLIB}>:LLVM>)
 target_link_libraries(prefixer PRIVATE stdc++fs)
+
+find_program(prefixer prefixer)
