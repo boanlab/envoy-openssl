@@ -1,6 +1,7 @@
 #include <openssl/ssl.h>
 #include <ossl.h>
 #include "iana_2_ossl_names.h"
+#include "log.h"
 
 
 /*
@@ -11,8 +12,9 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_CIPHER_get_name.html
  */
 extern "C" int SSL_CTX_set_strict_cipher_list(SSL_CTX *ctx, const char *str) {
+  
   std::string osslstr {iana_2_ossl_names(str)};
-
+  bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_strict_cipher_list");
   // OpenSSL's SSL_CTX_set_cipher_list() performs virtually no checking on str.
   // It only returns 0 (fail) if no cipher could be selected from the list at
   // all. Otherwise it returns 1 (pass) even if there is only one cipher in the
@@ -21,28 +23,30 @@ extern "C" int SSL_CTX_set_strict_cipher_list(SSL_CTX *ctx, const char *str) {
     return 0;
   }
 
-  STACK_OF(SSL_CIPHER)* ciphers = reinterpret_cast<STACK_OF(SSL_CIPHER)*>(ossl.ossl_SSL_CTX_get_ciphers(ctx));
-  char* dup = strdup(osslstr.c_str());
-  char* token = strtok(dup, ":+![|]");
-  while (token != NULL) {
-    std::string str1(token);
-    bool found = false;
-    for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); i++) {
-      const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers, i);
-      std::string str2(SSL_CIPHER_get_name(cipher));
-      if (str1.compare(str2) == 0) {
-        found = true;
-      }
-    }
+   bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_strict_cipher_list - ossl_SSL_CTX_get_ciphers");
+   STACK_OF(SSL_CIPHER)* ciphers = reinterpret_cast<STACK_OF(SSL_CIPHER)*>(ossl.ossl_SSL_CTX_get_ciphers(ctx));
+   char* dup = strdup(osslstr.c_str());
+   char* token = strtok(dup, ":+![|]");
+   while (token != NULL) {
+     std::string str1(token);
+     bool found = false;
+     for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); i++) {
+       const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers, i);
+       std::string str2(SSL_CIPHER_get_name(cipher));
+       if (str1.compare(str2) == 0) {
+         found = true;
+         bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_strict_cipher_list-found!: %s", str2.c_str());
+       }
+     }
 
-    if (!found && str1.compare("-ALL") && str1.compare("ALL")) {
-      free(dup);
-      return 0;
-    }
+     if (!found && str1.compare("-ALL") && str1.compare("ALL")) {
+       free(dup);
+       return 0;
+     }
 
-    token = strtok(NULL, ":[]|");
-  }
-
-  free(dup);
-  return 1;
+     token = strtok(NULL, ":[]|");
+   }
+   free(dup);
+   bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_strict_cipher_list-found_token: %s", token);
+   return 1;
 }

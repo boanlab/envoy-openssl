@@ -1,5 +1,6 @@
 #include <openssl/pkcs8.h>
 #include <ossl.h>
+#include "log.h"
 
 
 /*
@@ -7,6 +8,7 @@
  * https://www.openssl.org/docs/man3.0/man3/PKCS12_get_key_and_certs.html
  */
 extern "C" int PKCS12_get_key_and_certs(EVP_PKEY **out_key, STACK_OF(X509) *out_certs, CBS *in, const char *password) {
+  bssl_compat_info("[+]SSL_METHOD::PKCS12_get_key_and_certs");
   bssl::UniquePtr<BIO> bio {BIO_new_mem_buf(CBS_data(in), CBS_len(in))};
   if (!bio) {
     return 0;

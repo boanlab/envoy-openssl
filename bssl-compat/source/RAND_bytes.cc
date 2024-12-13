@@ -18,9 +18,10 @@
 
 #include <openssl/rand.h>
 #include <ossl.h>
+#include "log.h"
 
 extern "C" int RAND_bytes(uint8_t *buf, size_t len) {
-
+  bssl_compat_info("[+]SSL_METHOD::RAND_bytes");
   if (ossl.ossl_RAND_bytes((unsigned char *)buf, (int)len) <= 0)
     return 0;
 

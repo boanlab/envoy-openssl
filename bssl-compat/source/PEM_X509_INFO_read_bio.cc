@@ -12,17 +12,47 @@
  * |sk| value was passed in.
  */
 extern "C" STACK_OF(X509_INFO) *PEM_X509_INFO_read_bio(BIO *bp, STACK_OF(X509_INFO) *sk, pem_password_cb *cb, void *u) {
-  STACK_OF(X509_INFO) *saved {sk};
+  if (!bp) return nullptr;
+  bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-1");
 
-  auto ret {reinterpret_cast<STACK_OF(X509_INFO)*>(ossl.ossl_PEM_X509_INFO_read_bio(bp, nullptr, cb, u))};
+  STACK_OF(X509_INFO)* ret = sk ? sk : sk_X509_INFO_new_null();
+  if (!ret) return nullptr;
 
-  if ((ret != nullptr) && (saved != nullptr)) {
-    for (size_t i = 0, max = sk_X509_INFO_num(ret); i < max; i++) {
-      sk_X509_INFO_push(saved, sk_X509_INFO_value(ret, i));
-    }
-    sk_X509_INFO_free(ret);
-    ret = saved;
+  char *name = nullptr, *header = nullptr;
+  unsigned char *data = nullptr;
+  const unsigned char *p;
+  long len = 0;
+
+  int result = ossl.ossl_PEM_read_bio(bp, &name, &header, &data, &len);
+  bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-result_length : %d", result);
+  if (result <= 0) {
+    OPENSSL_free(name);
+    OPENSSL_free(header);
+    OPENSSL_free(data);
+    return ret;
   }
+  bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-2");
+  bssl::UniquePtr<X509_INFO> xi(static_cast<X509_INFO*>(OPENSSL_malloc(sizeof(X509_INFO))));
+  if (xi) {
+    memset(xi.get(), 0, sizeof(X509_INFO));
+    p = data;
+    if (strcmp(name, "CERTIFICATE") == 0) {
+      xi->x509 = ossl.ossl_d2i_X509(nullptr, &p, len);
+    } else if (strcmp(name, "X509 CRL") == 0) {
+      xi->crl = ossl.ossl_d2i_X509_CRL(nullptr, &p, len);
+    }
+
+    if (xi->x509 || xi->crl) {
+      if (sk_X509_INFO_push(ret, xi.get())) {
+        xi.release();
+      }
+    }
+  }
+  bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-3");
+
+  OPENSSL_free(name);
+  OPENSSL_free(header);
+  OPENSSL_free(data);
 
   return ret;
 }

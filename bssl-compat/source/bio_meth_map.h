@@ -3,6 +3,7 @@
 
 #include <openssl/bio.h>
 #include <ossl/openssl/bio.h>
+#include <ossl/openssl/types.h>
 
 
 /**

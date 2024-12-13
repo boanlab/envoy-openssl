@@ -1,11 +1,13 @@
 #include <openssl/ssl.h>
 #include <openssl/bytestring.h>
+#include "log.h"
 
 
 /*
  * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L4254
  */
 int SSL_early_callback_ctx_extension_get(const SSL_CLIENT_HELLO *client_hello, uint16_t extension_type, const uint8_t **out_data, size_t *out_len) {
+  bssl_compat_info("[+]SSL_METHOD::SSL_early_callback_ctx_extension_get");
   CBS extensions;
   CBS_init(&extensions, client_hello->extensions, client_hello->extensions_len);
 

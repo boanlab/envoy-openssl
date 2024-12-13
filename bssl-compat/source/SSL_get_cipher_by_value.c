@@ -1,9 +1,11 @@
 #include <openssl/ssl.h>
 #include <ossl.h>
 #include <arpa/inet.h>
+#include "log.h"
 
 
 const SSL_CIPHER *SSL_get_cipher_by_value(uint16_t value) {
+  bssl_compat_info("[+]SSL_METHOD::SSL_get_cipher_by_value");
   const SSL_CIPHER *result = NULL;
   SSL_CTX *ctx = SSL_CTX_new(TLS_method());
   if(ctx) {

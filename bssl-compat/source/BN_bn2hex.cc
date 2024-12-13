@@ -1,6 +1,7 @@
 #include <openssl/bn.h>
 #include <ossl.h>
 #include <ctype.h>
+#include "log.h"
 
 
 /*
@@ -12,6 +13,7 @@
  * should be freed with OPENSSL_free(), consistent with what OpenSSL says.
  */
 extern "C" char *BN_bn2hex(const BIGNUM *bn) {
+  bssl_compat_info("[+]SSL_METHOS::BN_bn2hex");
   char *s = ossl.ossl_BN_bn2hex(bn);
 
   if (s) {

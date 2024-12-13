@@ -8,6 +8,7 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_get_negotiated_group.html
  */
 uint16_t SSL_get_curve_id(const SSL *ssl) {
+  
   int nid = ossl.ossl_SSL_get_negotiated_group((SSL*)ssl);
   
   switch(nid) {

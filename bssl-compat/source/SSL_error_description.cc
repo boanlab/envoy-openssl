@@ -16,9 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <openssl/ssl.h>
+#include "log.h"
 
 
 extern "C" const char *SSL_error_description(int err) {
+bssl_compat_info("[+]call SSL_METHOD::SSL_error_description");
   switch (err) {
 #ifdef SSL_ERROR_NONE
     case SSL_ERROR_NONE: return "NONE";

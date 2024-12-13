@@ -1,6 +1,7 @@
 #include <openssl/bio.h>
 #include <ossl.h>
 #include "bio_meth_map.h"
+#include "log.h"
 
 
 static const BIO_METHOD *BIO_s_socket_create(void) {
@@ -24,6 +25,7 @@ static const BIO_METHOD *BIO_s_socket_create(void) {
 }
 
 extern "C" const BIO_METHOD *BIO_s_socket() {
-   static const BIO_METHOD *result = BIO_s_socket_create();
-   return result;
+  bssl_compat_info("[+]BIO_METHOD::BIO_s_socket");
+  static const BIO_METHOD *result = BIO_s_socket_create();
+  return result;
 }

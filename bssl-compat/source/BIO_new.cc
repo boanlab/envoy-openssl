@@ -1,6 +1,7 @@
 #include <openssl/bio.h>
 #include <ossl.h>
 #include "bio_meth_map.h"
+#include "log.h"
 
 
 /*
@@ -13,5 +14,10 @@
  * it does also initialise the reference count to 1.
  */
 extern "C" BIO *BIO_new(const BIO_METHOD *bsslMethod) {
+  bssl_compat_info("[+]BIO_METHOD::BIO_new - %s", bsslMethod->name); 
+  if(strcmp(bsslMethod->name, "buffer") == 0) {
+      const ossl_BIO_METHOD *osslMethod = ossl.ossl_BIO_f_buffer();
+      return ossl.ossl_BIO_new(osslMethod);
+  }
   return ossl.ossl_BIO_new(bio_meth_map_lookup(bsslMethod));
 }
