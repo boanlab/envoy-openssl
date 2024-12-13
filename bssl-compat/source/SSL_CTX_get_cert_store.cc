@@ -13,6 +13,6 @@
 // }
 
 extern "C" X509_STORE * SSL_CTX_get_cert_store(const SSL_CTX *ctx) {
-  bssl_compat_info("[+]SSL_METHOD::SSL_CTX_get_cert_store");
+  //bssl_compat_info("[+]SSL_METHOD::SSL_CTX_get_cert_store");
   return (X509_STORE*)ossl.ossl_SSL_CTX_get_cert_store((SSL_CTX*)ctx);
 }

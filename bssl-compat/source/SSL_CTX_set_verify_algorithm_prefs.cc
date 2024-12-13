@@ -8,7 +8,7 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_set1_sigalgs.html
  */
 extern "C" int SSL_CTX_set_verify_algorithm_prefs(SSL_CTX *ctx, const uint16_t *prefs, size_t num_prefs) {
-  bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_verify_algorithm_prefs");
+  //bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_verify_algorithm_prefs");
   static const struct { // Copied from boringssl/ssl/ssl_privkey.cc
     int pkey_type;
     int hash_nid;

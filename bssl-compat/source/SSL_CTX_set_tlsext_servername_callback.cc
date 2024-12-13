@@ -8,6 +8,6 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_set_tlsext_servername_callback.html
  */
 extern "C" int SSL_CTX_set_tlsext_servername_callback(SSL_CTX *ctx, int (*callback)(SSL *ssl, int *out_alert, void *arg)) {
-  bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_tlsext_servername_callback");
+  //bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_tlsext_servername_callback");
   return ossl.ossl_SSL_CTX_set_tlsext_servername_callback(ctx, callback);
 }

@@ -8,6 +8,6 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_use_PrivateKey.html
  */
 extern "C" int SSL_CTX_use_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey) {
-  bssl_compat_info("[+]SSL_METHOD::SSL_CTX_use_PrivateKey");
+  //bssl_compat_info("[+]SSL_METHOD::SSL_CTX_use_PrivateKey");
   return (ossl.ossl_SSL_CTX_use_PrivateKey(ctx, pkey) == 1) ? 1 : 0;
 }

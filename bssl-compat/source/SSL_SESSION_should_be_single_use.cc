@@ -22,6 +22,6 @@
 
 
 extern "C" int SSL_SESSION_should_be_single_use(const SSL_SESSION *session) {
-  bssl_compat_info("[+]SSL_METHOD::SSL_SESSION_should_be_single_use");
+  //bssl_compat_info("[+]SSL_METHOD::SSL_SESSION_should_be_single_use");
   return (ossl.ossl_SSL_SESSION_get_protocol_version(session) >= ossl_TLS1_3_VERSION);
 }

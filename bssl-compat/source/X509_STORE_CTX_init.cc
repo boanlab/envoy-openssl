@@ -8,7 +8,7 @@
  * OSSL: https://www.openssl.org/docs/man3.0/man3/X509_STORE_CTX_init.html
  */
 extern "C" int X509_STORE_CTX_init(X509_STORE_CTX *ctx, X509_STORE *store, X509 *x509, STACK_OF(X509) *chain) {
-  bssl_compat_info("[+]call SSL_METHOD::X509_STORE_CTX_init"); 
+  //bssl_compat_info("[+]call SSL_METHOD::X509_STORE_CTX_init"); 
   if (store == nullptr) {
     return 0; // BoringSSL requires a non-null store
   }

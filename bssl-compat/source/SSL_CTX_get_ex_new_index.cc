@@ -15,7 +15,7 @@ int SSL_CTX_get_ex_new_index(long argl, void *argp,
      *
      * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_get_ex_new_index.html
      */
-    bssl_compat_info("[+]SSL_METHOD::SSL_CTX_get_ex_new_index");
+    //bssl_compat_info("[+]SSL_METHOD::SSL_CTX_get_ex_new_index");
     return ossl.ossl_CRYPTO_get_ex_new_index(ossl_CRYPTO_EX_INDEX_SSL_CTX,argl, argp,
                                              reinterpret_cast<ossl_CRYPTO_EX_new *>(unused),
                                              dup_unused,

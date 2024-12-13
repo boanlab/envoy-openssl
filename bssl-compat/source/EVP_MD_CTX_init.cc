@@ -16,6 +16,6 @@
 
 extern "C" void EVP_MD_CTX_init(EVP_MD_CTX *ctx) {
     //print_ctx_info();
-    bssl_compat_info("[+]SSL_METHOS::EVP_MD_CTX_init() implemented other functions..");
+    //bssl_compat_info("[+]SSL_METHOS::EVP_MD_CTX_init() implemented other functions..");
     memset(ctx, 0, EVP_MD_CTX_SIZE);
 }

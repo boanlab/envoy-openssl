@@ -56,7 +56,7 @@ static int tls_alert_to_x590_err(int alert)
  * Return 1 to indicate verification success and 0 to indicate verification failure
  */
 static int ossl_cert_verify_callback(X509_STORE_CTX *ctx, void *arg) {
-  bssl_compat_info("[+]call SSL_METHOD::ossl_cert_verify_callback");
+  //bssl_compat_info("[+]call SSL_METHOD::ossl_cert_verify_callback");
   int idx {ossl_SSL_get_ex_data_X509_STORE_CTX_idx()};
   SSL *ssl {static_cast<SSL*>(ossl_X509_STORE_CTX_get_ex_data(ctx, idx))};
 
@@ -76,7 +76,6 @@ static int ossl_cert_verify_callback(X509_STORE_CTX *ctx, void *arg) {
   uint8_t alert {SSL_AD_INTERNAL_ERROR};
   enum ssl_verify_result_t verify_result;
   {
-    bssl_compat_info("[+]call SSL_METHOD::ossl_cert_verify_callback");
     // X509_STORE_CTX_get0_untrusted() retrieves an internal pointer to the stack of untrusted
     // certificates associated with ctx, including the peer's leaf certificate at index 0.
     // This is exactly what BoringSSL's SSL_get_peer_full_cert_chain() should return. However,
@@ -111,7 +110,7 @@ static int ossl_cert_verify_callback(X509_STORE_CTX *ctx, void *arg) {
 
 extern "C" void SSL_CTX_set_custom_verify(SSL_CTX *ctx, int mode,
                   enum ssl_verify_result_t (*callback)(SSL *ssl, uint8_t *out_alert)) {
-  bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_custom_verify");
+  //bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_custom_verify");
   ossl_SSL_CTX_set_verify(ctx, mode, nullptr);
   ossl_SSL_CTX_set_cert_verify_callback(ctx, ossl_cert_verify_callback,
                                         reinterpret_cast<void*>(callback));

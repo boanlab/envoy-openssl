@@ -26,7 +26,7 @@
  */
 extern "C" uint16_t SSL_CIPHER_get_min_version(const SSL_CIPHER *cipher) {
   // This logic was copied from BoringSSL's ssl_cipher.cc
-  bssl_compat_info("[+]SSL_METHOD::SSL_CIPHER_get_min_version");
+  //bssl_compat_info("[+]SSL_METHOD::SSL_CIPHER_get_min_version");
 
   if ((ossl.ossl_SSL_CIPHER_get_kx_nid(cipher) == ossl_NID_kx_any) ||
       (ossl.ossl_SSL_CIPHER_get_auth_nid(cipher) == ossl_NID_auth_any)) {

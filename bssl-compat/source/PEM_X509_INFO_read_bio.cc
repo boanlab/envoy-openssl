@@ -13,7 +13,7 @@
  */
 extern "C" STACK_OF(X509_INFO) *PEM_X509_INFO_read_bio(BIO *bp, STACK_OF(X509_INFO) *sk, pem_password_cb *cb, void *u) {
   if (!bp) return nullptr;
-  bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-1");
+  //bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-1");
 
   STACK_OF(X509_INFO)* ret = sk ? sk : sk_X509_INFO_new_null();
   if (!ret) return nullptr;
@@ -24,14 +24,12 @@ extern "C" STACK_OF(X509_INFO) *PEM_X509_INFO_read_bio(BIO *bp, STACK_OF(X509_IN
   long len = 0;
 
   int result = ossl.ossl_PEM_read_bio(bp, &name, &header, &data, &len);
-  bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-result_length : %d", result);
   if (result <= 0) {
     OPENSSL_free(name);
     OPENSSL_free(header);
     OPENSSL_free(data);
     return ret;
   }
-  bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-2");
   bssl::UniquePtr<X509_INFO> xi(static_cast<X509_INFO*>(OPENSSL_malloc(sizeof(X509_INFO))));
   if (xi) {
     memset(xi.get(), 0, sizeof(X509_INFO));
@@ -48,7 +46,6 @@ extern "C" STACK_OF(X509_INFO) *PEM_X509_INFO_read_bio(BIO *bp, STACK_OF(X509_IN
       }
     }
   }
-  bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-3");
 
   OPENSSL_free(name);
   OPENSSL_free(header);

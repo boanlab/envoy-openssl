@@ -21,7 +21,7 @@
 
 
 extern "C" void SSL_set_renegotiate_mode(SSL *ssl, enum ssl_renegotiate_mode_t mode) {
-  bssl_compat_info("[+]SSL_METHOD::SSL_set_renegotiate_mode");
+  //bssl_compat_info("[+]SSL_METHOD::SSL_set_renegotiate_mode");
   switch(mode) {
     case ssl_renegotiate_never: {
       ossl.ossl_SSL_clear_options(ssl,ossl_SSL_OP_ALLOW_CLIENT_RENEGOTIATION);

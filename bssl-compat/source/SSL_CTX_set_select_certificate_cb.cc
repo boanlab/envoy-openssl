@@ -22,15 +22,13 @@ typedef enum ssl_select_cert_result_t (*select_certificate_cb_t)(const SSL_CLIEN
 class ActiveSelectCertificateCb {
   public:
     ActiveSelectCertificateCb(SSL *ssl) : ssl_(ssl) {
-      bssl_compat_info("[+]call SSL_METHOD::ssl_ctx_client_hello_cb1");
+      //bssl_compat_info("[+]call SSL_METHOD::ssl_ctx_client_hello_cb");
       SSL_set_ex_data(ssl_, index(), this);
     }
     ~ActiveSelectCertificateCb() {
-      bssl_compat_info("[+]call SSL_METHOD::ssl_ctx_client_hello_cb2");
       SSL_set_ex_data(ssl_, index(), nullptr);
     }
     static int index() {
-      bssl_compat_info("[+]call SSL_METHOD::ssl_ctx_client_hello_cb3");
       static int index = SSL_get_ex_new_index(0, nullptr, nullptr, nullptr,
                               +[](void *, void *ptr, CRYPTO_EX_DATA *, int, long, void*) {
                                 if (ptr) ossl_OPENSSL_free(ptr);
@@ -46,7 +44,6 @@ class ActiveSelectCertificateCb {
  * callback invocation for the specified SSL object.
  */
 bool in_select_certificate_cb(const SSL *ssl) {
-  bssl_compat_info("[+]call SSL_METHOD::ssl_ctx_client_hello_cb4");
   return SSL_get_ex_data(ssl, ActiveSelectCertificateCb::index()) != nullptr;
 }
 
@@ -59,7 +56,6 @@ bool in_select_certificate_cb(const SSL *ssl) {
  * passing it the SSL_CLIENT_HELLO.
  */
 static int ssl_ctx_client_hello_cb(SSL *ssl, int *alert, void *arg) {
-  bssl_compat_info("[+]call SSL_METHOD::ssl_ctx_client_hello_cb6");
   select_certificate_cb_t callback {reinterpret_cast<select_certificate_cb_t>(arg)};
 
   SSL_CLIENT_HELLO client_hello;
@@ -123,6 +119,6 @@ static int ssl_ctx_client_hello_cb(SSL *ssl, int *alert, void *arg) {
 }
 
 extern "C" void SSL_CTX_set_select_certificate_cb(SSL_CTX *ctx, select_certificate_cb_t cb) {
-  bssl_compat_info("[+]call SSL_METHOD::ssl_ctx_client_hello_cb5");
+  //bssl_compat_info("[+]SSL_METHODS::SSL_CTX_set_select_certificate_cb");
   ossl_SSL_CTX_set_client_hello_cb(ctx, ssl_ctx_client_hello_cb, reinterpret_cast<void*>(cb));
 }

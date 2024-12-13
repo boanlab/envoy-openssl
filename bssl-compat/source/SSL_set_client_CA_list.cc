@@ -8,6 +8,6 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_set_client_CA_list.html
  */
 extern "C" void SSL_set_client_CA_list(SSL *ssl, STACK_OF(X509_NAME) *name_list) {
-  bssl_compat_info("[+]call SSL_METHOD::SSL_set_client_CA_list"); 
+  //bssl_compat_info("[+]call SSL_METHOD::SSL_set_client_CA_list"); 
   ossl.ossl_SSL_set_client_CA_list(ssl, reinterpret_cast<ossl_STACK_OF(ossl_X509_NAME)*>(name_list));
 }

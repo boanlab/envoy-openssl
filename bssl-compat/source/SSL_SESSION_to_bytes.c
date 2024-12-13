@@ -8,7 +8,7 @@
  * https://www.openssl.org/docs/man3.0/man3/i2d_SSL_SESSION.html
  */
 int SSL_SESSION_to_bytes(const SSL_SESSION *in, uint8_t **out_data, size_t *out_len) {
-  bssl_compat_info("[+]SSL_METHOD::SSL_SESSION_to_bytes");
+  //bssl_compat_info("[+]SSL_METHOD::SSL_SESSION_to_bytes");
   if(in == NULL || out_data == NULL || out_len == NULL) {
     return 0;
   }

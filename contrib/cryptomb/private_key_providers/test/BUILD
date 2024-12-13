@@ -26,8 +26,8 @@ envoy_cc_test_library(
     # The actual feature is dependent on hardware but this mock library can run on other platforms.
     target_compatible_with = envoy_contrib_linux_x86_64_constraints(),
     deps = [
-        "//contrib/cryptomb/private_key_providers/source:cryptomb_private_key_provider_lib",
-        "//contrib/cryptomb/private_key_providers/source:ipp_crypto_wrapper_lib",
+    #    "//contrib/cryptomb/private_key_providers/source:cryptomb_private_key_provider_lib",
+    #    "//contrib/cryptomb/private_key_providers/source:ipp_crypto_wrapper_lib",
         "//envoy/api:api_interface",
         "//envoy/event:dispatcher_interface",
         "//envoy/server:transport_socket_config_interface",

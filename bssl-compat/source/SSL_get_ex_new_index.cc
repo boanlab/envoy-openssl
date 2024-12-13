@@ -13,6 +13,6 @@
  * pass them as nullptr to OpenSSL.
  */
 extern "C" int SSL_get_ex_new_index(long argl, void *argp, CRYPTO_EX_unused *new_func, CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func) {
-  bssl_compat_info("[+]SSL_METHOD::ossl_SSL_get_ex_new_index");
+  //bssl_compat_info("[+]SSL_METHOD::ossl_SSL_get_ex_new_index");
   return ossl.ossl_SSL_get_ex_new_index(argl, argp, nullptr, nullptr, free_func);
 }
