@@ -30,3 +30,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(EVP_PKEY,' \
   --uncomment-regex 'BORINGSSL_MAKE_UP_REF(EVP_PKEY,'
 
+  # --uncomment-func-decl EVP_PKEY_sign \
+  # --uncomment-func-decl EVP_PKEY_sign_init \
+  # --uncomment-func-decl EVP_PKEY_CTX_new \
+  # --uncomment-func-decl EVP_PKEY_CTX_free \

@@ -98,4 +98,3 @@ uncomment.sh "$1" --comment -h \
   --uncomment-struct Deleter \
   --uncomment-regex-range 'template\s*<typename\s*T,\s*typename\s*CleanupRet,\s*void\s*(\*init)(T\s*\*),' '};$' \
   --uncomment-regex 'template\s*<typename' 'using\s*UniquePtr'
-

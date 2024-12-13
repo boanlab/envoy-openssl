@@ -16,6 +16,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro DECLARE_PEM_rw \
   --uncomment-macro DECLARE_PEM_rw_cb \
   --uncomment-typedef pem_password_cb \
+  --uncomment-func-decl PEM_read_bio \
   --uncomment-func-decl PEM_bytes_read_bio \
   --uncomment-func-decl PEM_X509_INFO_read_bio \
   --uncomment-regex 'DECLARE_PEM_rw(X509,' \

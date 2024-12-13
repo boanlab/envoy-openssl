@@ -55,4 +55,3 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro BIO_TYPE_SOCKET \
   --uncomment-func-decl BIO_should_retry \
 
-
