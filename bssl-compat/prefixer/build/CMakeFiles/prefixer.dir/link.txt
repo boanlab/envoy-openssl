@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/prefixer.dir/prefixer.o -o prefixer   -L/usr/lib/llvm/lib  -Wl,-rpath,/usr/lib/llvm/lib /usr/lib/llvm/lib/libclang-cpp.so.14 -lstdc++fs 

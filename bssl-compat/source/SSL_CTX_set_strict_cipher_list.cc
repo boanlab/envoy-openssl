@@ -37,6 +37,7 @@ extern "C" int SSL_CTX_set_strict_cipher_list(SSL_CTX *ctx, const char *str) {
 
     if (!found && str1.compare("-ALL") && str1.compare("ALL")) {
       free(dup);
+      bssl_compat_info("[-]SSL_METHOD::SSL_CTX_set_strict_cipher_list-Cipher Suite not found!");
       return 0;
     }
 

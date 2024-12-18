@@ -7,6 +7,8 @@
 
 #include "source/common/config/datasource.h"
 
+#include "openssl/evp.h"
+#include "openssl/rsa.h"
 #include "openssl/ssl.h"
 
 namespace Envoy {
@@ -137,6 +139,57 @@ ssl_private_key_result_t ecdsaPrivateKeyDecrypt(SSL*, uint8_t*, size_t*, size_t,
   return ssl_private_key_failure;
 }
 
+int openssl_add_pkcs1_prefix(unsigned char **out,
+                            size_t *out_len,
+                            int *allocated,
+                            const unsigned char *hash,
+                            size_t hash_len,
+                            EVP_PKEY *pkey) {
+    EVP_PKEY_CTX *ctx = NULL;
+    size_t sig_len = 0;
+    unsigned char *sig = NULL;
+    int ret = 0;
+
+    // 컨텍스트 생성
+    ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (ctx == NULL) {
+        goto err;
+    }
+
+    if (EVP_PKEY_sign_init(ctx) <= 0) {
+        goto err;
+    }
+
+    // PKCS#1 v1.5 패딩 설정
+    if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) <= 0) {
+        goto err;
+    }
+
+    // 서명 길이 계산
+    if (EVP_PKEY_sign(ctx, NULL, &sig_len, hash, hash_len) <= 0) {
+        goto err;
+    }
+
+    sig = static_cast<unsigned char*>(OPENSSL_malloc(sig_len));
+    if (sig == NULL) {
+        goto err;
+    }
+
+    *out = sig;
+    *out_len = sig_len;
+    *allocated = 1;
+    ret = 1;
+
+err:
+    if (ctx != NULL) {
+        EVP_PKEY_CTX_free(ctx);
+    }
+    if (!ret && sig != NULL) {
+        OPENSSL_free(sig);
+    }
+    return ret;
+}
+
 ssl_private_key_result_t rsaPrivateKeySignInternal(CryptoMbPrivateKeyConnection* ops, uint8_t*,
                                                    size_t*, size_t, uint16_t signature_algorithm,
                                                    const uint8_t* in, size_t in_len) {
@@ -180,19 +233,19 @@ ssl_private_key_result_t rsaPrivateKeySignInternal(CryptoMbPrivateKeyConnection*
       return status;
     }
 
-    if (!RSA_padding_add_PKCS1_PSS_mgf1(rsa.get(), msg, hash, md, nullptr, -1)) {
+    if (!RSA_padding_add_PKCS1_PSS(rsa.get(), msg, hash, md, -1)) {
       OPENSSL_free(msg);
       return status;
     }
   } else {
     // PKCS#1 1.5
     int prefix_allocated = 0;
-    if (!RSA_add_pkcs1_prefix(&msg, &msg_len, &prefix_allocated, EVP_MD_type(md), hash, hash_len)) {
+    if (!openssl_add_pkcs1_prefix(&msg, &msg_len, &prefix_allocated, hash, hash_len, pkey.get())) {
       if (prefix_allocated) {
         OPENSSL_free(msg);
       }
       return status;
-    }
+  }
 
     // RFC 8017 section 9.2
 
@@ -575,20 +628,28 @@ CryptoMbPrivateKeyMethodProvider::CryptoMbPrivateKeyMethodProvider(
     // If longer keys are ever supported, remember to change the signature buffer to be larger.
     ASSERT(key_size / 8 <= CryptoMbContext::MAX_SIGNATURE_SIZE);
 
-    BIGNUM e_check;
+
     // const BIGNUMs, memory managed by BoringSSL in RSA key structure.
+    // modify codes for boringssl & openssl.
     const BIGNUM* e = nullptr;
     const BIGNUM* n = nullptr;
     const BIGNUM* d = nullptr;
     RSA_get0_key(rsa, &n, &e, &d);
-    BN_init(&e_check);
-    BN_add_word(&e_check, 65537);
-    if (e == nullptr || BN_ucmp(e, &e_check) != 0) {
-      BN_free(&e_check);
-      throw EnvoyException("Only RSA keys with \"e\" parameter value 65537 are allowed, because "
+
+    BIGNUM* e_check = BN_new();
+    if (e_check == nullptr) {
+        throw EnvoyException("Failed to allocate BIGNUM for RSA exponent check");
+    }
+    if (BN_set_word(e_check, 65537) != 1) {  
+        BN_free(e_check);
+        throw EnvoyException("Failed to set BIGNUM value");
+    }
+    if (e == nullptr || BN_ucmp(e, e_check) != 0) { 
+        BN_free(e_check);
+        throw EnvoyException("Only RSA keys with \"e\" parameter value 65537 are allowed, because "
                            "we can validate the signatures using multi-buffer instructions.");
     }
-    BN_free(&e_check);
+    BN_free(e_check);
   } else if (EVP_PKEY_id(pkey.get()) == EVP_PKEY_EC) {
     ENVOY_LOG(debug, "CryptoMb key type: ECDSA");
     key_type_ = KeyType::Ec;

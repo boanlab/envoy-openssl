@@ -17,7 +17,9 @@ envoy_cc_library(
     ],
     external_deps = ["ssl"],
     repository = "@envoy",
-    deps = ["//contrib/qat:qatlib"],
+    deps = [
+        # "//contrib/qat:qatlib"
+    ],
 )
 
 envoy_cc_library(
@@ -36,7 +38,7 @@ envoy_cc_library(
         "ssl",
     ],
     deps = [
-        ":libqat_wrapper_lib",
+        #":libqat_wrapper_lib",
         "//envoy/api:api_interface",
         "//envoy/event:dispatcher_interface",
         "//envoy/registry",
@@ -55,11 +57,14 @@ envoy_cc_contrib_extension(
     srcs = ["config.cc"],
     hdrs = ["config.h"],
     defines = select({
-        "//bazel:linux_x86_64": [],
+        "//bazel:linux_x86_64": [
+            "QAT_DISABLED=1", #Added for debug
+        ],
         "//conditions:default": [
             "QAT_DISABLED=1",
         ],
     }),
+    tags = ["nofips"],
     deps = [
         "//envoy/protobuf:message_validator_interface",
         "//envoy/registry",
@@ -71,7 +76,7 @@ envoy_cc_contrib_extension(
         "@envoy_api//envoy/extensions/transport_sockets/tls/v3:pkg_cc_proto",
     ] + select({
         "//bazel:linux_x86_64": [
-            ":qat_private_key_provider_lib",
+        #    ":qat_private_key_provider_lib",
         ],
         "//conditions:default": [],
     }),

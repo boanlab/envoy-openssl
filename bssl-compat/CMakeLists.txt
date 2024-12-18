@@ -7,8 +7,8 @@ if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
-set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.13.tar.gz)
-set(OPENSSL_URL_HASH e74504ed7035295ec7062b1da16c15b57ff2a03cd2064a28d8c39458cacc45fc)
+set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.2.0.tar.gz)
+set(OPENSSL_URL_HASH a92f6dbca97566780ec95e2ba3d48aa8daa09048aac8392c7c7c58cc9c03c762)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -21,13 +21,13 @@ project(bssl-compat VERSION 0.1 LANGUAGES C CXX)
 include(cmake/boringssl.cmake)
 include(cmake/openssl.cmake)
 
-add_subdirectory(prefixer)
-add_custom_command(DEPENDS prefixer OpenSSL
+set(prefixer "${CMAKE_CURRENT_SOURCE_DIR}/prefixer/prefixer" CACHE PATH ".")
+add_custom_command(DEPENDS OpenSSL
                    COMMENT "Prefixing OpenSSL files"
                    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl/openssl/err.h
-                   COMMAND prefixer --src-path "${OPENSSL_INCLUDE_DIR}"
+                   COMMAND ${prefixer} --src-path "${OPENSSL_INCLUDE_DIR}"
                                     --src-incl "openssl/*.h"
                                     --src-skip "openssl/asn1_mac.h"
                                     --src-skip "openssl/opensslconf-*.h"
