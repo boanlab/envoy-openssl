@@ -77,10 +77,14 @@ bool SslHandshakerImpl::peerCertificateValidated() const {
 }
 
 Network::PostIoAction SslHandshakerImpl::doHandshake() {
+  ENVOY_LOG_MISC(info, "[+]SslHandshakerImpl::doHandshake - step1");
   ASSERT(state_ != Ssl::SocketState::HandshakeComplete && state_ != Ssl::SocketState::ShutdownSent);
+  ENVOY_LOG_MISC(info, "[+]SslHandshakerImpl::doHandshake - step2");
   int rc = SSL_do_handshake(ssl());
+  ENVOY_LOG_MISC(info, "[+]SslHandshakerImpl::doHandshake - step3");
   if (rc == 1) {
     state_ = Ssl::SocketState::HandshakeComplete;
+    ENVOY_LOG_MISC(info, "[+]SslHandshakerImpl::doHandshake - step4");
     handshake_callbacks_->onSuccess(ssl());
 
     // It's possible that we closed during the handshake callback.

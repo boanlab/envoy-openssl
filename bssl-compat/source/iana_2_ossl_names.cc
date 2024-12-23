@@ -1,5 +1,6 @@
 #include "iana_2_ossl_names.h"
 #include <string.h>
+#include "log.h"
 
 
 /**
@@ -254,6 +255,7 @@ static const struct {
 
 
 std::string iana_2_ossl_names(const char *str) {
+  bssl_compat_info("[+]OTHER_METHODS::iana_2_ossl_names target: - %s");
   std::string result {str};
 
   for (auto const &mapping : IANA_2_OSSL_NAMES) {

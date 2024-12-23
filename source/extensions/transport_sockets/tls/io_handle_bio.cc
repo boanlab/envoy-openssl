@@ -128,6 +128,7 @@ const BIO_METHOD* BIO_s_io_handle(void) { return &methods_io_handlep; }
 BIO* BIO_new_io_handle(Envoy::Network::IoHandle* io_handle) {
   BIO* b;
 
+  ENVOY_LOG_MISC(info, "[+]Envoy::Network::IoHandle - BIO_new_io_handle");
   b = BIO_new(BIO_s_io_handle());
   RELEASE_ASSERT(b != nullptr, "");
 
