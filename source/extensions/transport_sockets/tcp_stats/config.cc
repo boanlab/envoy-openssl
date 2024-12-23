@@ -55,6 +55,7 @@ DownstreamTcpStatsSocketFactory::DownstreamTcpStatsSocketFactory(
 
 Network::TransportSocketPtr
 DownstreamTcpStatsSocketFactory::createDownstreamTransportSocket() const {
+ENVOY_LOG_MISC(info, "[+]DownstreamTcpStatsSocketFactory - {}", "createDownstreamTransportSocket");
 #if defined(__linux__)
   auto inner_socket = transport_socket_factory_->createDownstreamTransportSocket();
   if (inner_socket == nullptr) {

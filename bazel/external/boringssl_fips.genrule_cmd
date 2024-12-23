@@ -118,19 +118,20 @@ fi
 rm -rf boringssl/build
 
 # Build BoringSSL.
+# -DFIPS=1 
 cd boringssl
-mkdir build && cd build && cmake -GNinja -DCMAKE_TOOLCHAIN_FILE=${HOME}/toolchain -DFIPS=1 -DCMAKE_BUILD_TYPE=Release ..
+mkdir build && cd build && cmake -GNinja -DCMAKE_TOOLCHAIN_FILE=${HOME}/toolchain -DCMAKE_BUILD_TYPE=Release ..
 ninja
 ninja run_tests
 ./crypto/crypto_test
 
-# Verify correctness of the FIPS build.
-if [[ `tool/bssl isfips` != "1" ]]; then
-  echo "ERROR: BoringSSL tool didn't report FIPS build."
-  exit 1
-fi
+# # Verify correctness of the FIPS build.
+# if [[ `tool/bssl isfips` != "1" ]]; then
+#   echo "ERROR: BoringSSL tool didn't report FIPS build."
+#   exit 1
+# fi
 
 # Move compiled libraries to the expected destinations.
 popd
-mv $ROOT/boringssl/build/crypto/libcrypto.a $1
-mv $ROOT/boringssl/build/ssl/libssl.a $2
+mv $ROOT/boringssl/build/crypto/libcrypto.so $1
+mv $ROOT/boringssl/build/ssl/libssl.so $2

@@ -30,6 +30,10 @@ envoy_cc_binary(
     }),
     stamped = True,
     deps = [":envoy_main_entry_lib"],
+    linkopts = [
+        "-Wl,--no-as-needed",
+        "-Wl,--allow-shlib-undefined",
+    ],
 )
 
 envoy_cc_library(

@@ -1,0 +1,7 @@
+/envoy-openssl/bssl-compat/prefixer/build/CMakeFiles/intrinsics_gen.dir
+/envoy-openssl/bssl-compat/prefixer/build/CMakeFiles/omp_gen.dir
+/envoy-openssl/bssl-compat/prefixer/build/CMakeFiles/acc_gen.dir
+/envoy-openssl/bssl-compat/prefixer/build/CMakeFiles/clang-tablegen-targets.dir
+/envoy-openssl/bssl-compat/prefixer/build/CMakeFiles/prefixer.dir
+/envoy-openssl/bssl-compat/prefixer/build/CMakeFiles/edit_cache.dir
+/envoy-openssl/bssl-compat/prefixer/build/CMakeFiles/rebuild_cache.dir

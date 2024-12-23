@@ -7,6 +7,7 @@
 #include <mutex>
 #include <map>
 
+
 /*
  * The `BIO_METHOD` type is used to represent a ”type” of `BIO` e.g. socket,
  * file, memory etc. A number of builtin `BIO_METHOD` instances are provided by
@@ -56,19 +57,6 @@ static std::map<const BIO_METHOD*,const ossl_BIO_METHOD*> map;
  */
 static std::mutex mutex;
 
-static long adapter_callback_ctrl(BIO *b, int cmd, ossl_BIO_info_cb *fp) {
-    if (b == nullptr) {
-        return 0;
-    }
-    // next bio를 가져오는 API 사용
-    BIO* next = ossl.ossl_BIO_next(b);
-    if (next == nullptr) {
-        return 0;
-    }
-    // 다음 BIO의 callback_ctrl 호출
-    return ossl.ossl_BIO_callback_ctrl(next, cmd, fp);
-}
-
 /**
  * Creates a new OpenSSL BIO_METHOD (ossl_BIO_METHOD) equivalent to the
  * specified BoringSSL BIO_METHOD (BIO_METHOD).
@@ -108,11 +96,13 @@ static ossl_BIO_METHOD *bio_method_new(const BIO_METHOD *bsslMethod) {
   // OSSL: int BIO_meth_set_destroy(BIO_METHOD *biom, int (*destroy)(BIO *));
   ossl.ossl_BIO_meth_set_destroy(osslMethod, bsslMethod->destroy);
 
+  // BSSL: long (*callback_ctrl)(BIO *, int, bio_info_cb);
+  // OSSL: int ossl_BIO_meth_set_callback_ctrl(ossl_BIO_METHOD *biom, long (*callback_ctrl)(ossl_BIO *, int, ossl_BIO_info_cb *))
   if (bsslMethod->callback_ctrl == nullptr) {
-      //bssl_compat_info("[+]new BIO_METHOD::callback_ctrl - %s", bsslMethod->name); 
-      ossl.ossl_BIO_meth_set_callback_ctrl(osslMethod, nullptr);
-  } else {
-      bssl_compat_fatal("[-]BIO_METHOD::callback_ctrl is not supported");
+    ossl.ossl_BIO_meth_set_callback_ctrl(osslMethod, nullptr);
+  }
+  else {
+    bssl_compat_fatal("BIO_METHOD::callback_ctrl is not supported");
   }
 
   return osslMethod;
@@ -121,10 +111,9 @@ static ossl_BIO_METHOD *bio_method_new(const BIO_METHOD *bsslMethod) {
 /**
  * Registers the mapping between the specified BoringSSL BIO_METHOD*, and the OpenSSL ossl_BIO_METHOD*
  */
-bool bio_meth_map_register(const BIO_METHOD *bsslMethod, const ossl_BIO_METHOD *osslMethod) {
+bool bio_meth_map_register(const BIO_METHOD *bsslMethod, const ossl_BIO_METHOD*osslMethod) {
   std::lock_guard<std::mutex> lock(mutex);
   auto i = map.insert(std::make_pair(bsslMethod, osslMethod));
-  //bssl_compat_info("[+]BIO_METHOD::bio_meth_map_register - %s", bsslMethod->name); 
   return i.second;
 }
 
@@ -134,7 +123,6 @@ bool bio_meth_map_register(const BIO_METHOD *bsslMethod, const ossl_BIO_METHOD *
 const ossl_BIO_METHOD *bio_meth_map_lookup(const BIO_METHOD *bsslMethod) {
   std::lock_guard<std::mutex> lock(mutex);
   auto i = map.find(bsslMethod);
-  //bssl_compat_info("[+]BIO_METHOD::bio_meth_map_lookup - %s", bsslMethod->name); 
 
   if (i == map.end()) {
     ossl_BIO_METHOD *osslMethod = bio_method_new(bsslMethod);

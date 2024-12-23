@@ -226,6 +226,7 @@ void MultiConnectionBaseImpl::write(Buffer::Instance& data, bool end_stream) {
 }
 
 void MultiConnectionBaseImpl::setBufferLimits(uint32_t limit) {
+  ENVOY_LOG_MISC(info, "[+]MultiConnectionBaseImpl::setBufferLimits - {}", limit);
   if (!connect_finished_) {
     ASSERT(!per_connection_state_.buffer_limits_.has_value());
     per_connection_state_.buffer_limits_ = limit;

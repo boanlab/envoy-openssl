@@ -31,6 +31,7 @@ void ValidateResultCallbackImpl::onCertValidationResult(bool succeeded,
 
 SslExtendedSocketInfoImpl::~SslExtendedSocketInfoImpl() {
   if (cert_validate_result_callback_.has_value()) {
+    ENVOY_LOG_MISC(info, "[-]cert_validate_result_callback_->onSslHandshakeCancelled()");
     cert_validate_result_callback_->onSslHandshakeCancelled();
   }
 }
@@ -68,6 +69,7 @@ SslHandshakerImpl::SslHandshakerImpl(bssl::UniquePtr<SSL> ssl, int ssl_extended_
                                      Ssl::HandshakeCallbacks* handshake_callbacks)
     : ssl_(std::move(ssl)), handshake_callbacks_(handshake_callbacks),
       extended_socket_info_(*this) {
+  ENVOY_LOG_MISC(info, "[+]SslHandshakerImpl::SslHandshakerImpl - {}", "SSL_set_ex_data");
   SSL_set_ex_data(ssl_.get(), ssl_extended_socket_info_index, &(this->extended_socket_info_));
 }
 
@@ -78,10 +80,13 @@ bool SslHandshakerImpl::peerCertificateValidated() const {
 
 Network::PostIoAction SslHandshakerImpl::doHandshake() {
   ASSERT(state_ != Ssl::SocketState::HandshakeComplete && state_ != Ssl::SocketState::ShutdownSent);
+  ENVOY_LOG_MISC(info, "[+]Network::PostIoAction - {}", "SslHandshakerImpl::doHandshake -> SSL_do_handshake");
   int rc = SSL_do_handshake(ssl());
+  ENVOY_LOG_MISC(info, "[+]Network::PostIoAction - {}", "SslHandshakerImpl::doHandshake2");
   if (rc == 1) {
     state_ = Ssl::SocketState::HandshakeComplete;
     handshake_callbacks_->onSuccess(ssl());
+    ENVOY_LOG_MISC(info, "[+]Network::PostIoAction - {}", "SslHandshakerImpl::doHandshake3");
 
     // It's possible that we closed during the handshake callback.
     return handshake_callbacks_->connection().state() == Network::Connection::State::Open
@@ -89,6 +94,7 @@ Network::PostIoAction SslHandshakerImpl::doHandshake() {
                : PostIoAction::Close;
   } else {
     int err = SSL_get_error(ssl(), rc);
+    ENVOY_LOG_MISC(info, "[+]Network::PostIoAction - {}", "SslHandshakerImpl::doHandshake5");
     ENVOY_CONN_LOG(trace, "ssl error occurred while read: {}", handshake_callbacks_->connection(),
                    Utility::getErrorDescription(err));
     switch (err) {
@@ -101,6 +107,7 @@ Network::PostIoAction SslHandshakerImpl::doHandshake() {
     //   return PostIoAction::KeepOpen;
     default:
       handshake_callbacks_->onFailure();
+      ENVOY_LOG_MISC(info, "[+]Network::PostIoAction - {}", "SslHandshakerImpl::doHandshake4 - handshake fail...");
       return PostIoAction::Close;
     }
   }

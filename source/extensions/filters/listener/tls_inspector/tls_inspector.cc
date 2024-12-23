@@ -64,6 +64,7 @@ Config::Config(
                                      max_client_hello_size_, size_t(TLS_MAX_CLIENT_HELLO)));
   }
 
+  ENVOY_LOG_MISC(info, "[+]Config::Config - {}", "SSL_CTX_set_min_proto_versio");
   SSL_CTX_set_min_proto_version(ssl_ctx_.get(), TLS_MIN_SUPPORTED_VERSION);
   SSL_CTX_set_max_proto_version(ssl_ctx_.get(), TLS_MAX_SUPPORTED_VERSION);
   SSL_CTX_set_options(ssl_ctx_.get(), SSL_OP_NO_TICKET);
@@ -98,7 +99,9 @@ bssl::UniquePtr<SSL> Config::newSsl() { return bssl::UniquePtr<SSL>{SSL_new(ssl_
 Filter::Filter(const ConfigSharedPtr& config)
     : config_(config), ssl_(config_->newSsl()),
       requested_read_bytes_(config->initialReadBufferSize()) {
+  ENVOY_LOG_MISC(info, "[+]Filter::Filter- {}", "SSL_set_app_data");
   SSL_set_app_data(ssl_.get(), this);
+  ENVOY_LOG_MISC(info, "[+]Filter::Filter- {}", "SSL_set_accept_state");
   SSL_set_accept_state(ssl_.get());
 }
 
@@ -172,6 +175,7 @@ Network::FilterStatus Filter::onData(Network::ListenerFilterBuffer& buffer) {
 ParseState Filter::parseClientHello(const void* data, size_t len,
                                     uint64_t bytes_already_processed) {
   // Ownership remains here though we pass a reference to it in `SSL_set0_rbio()`.
+  ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello- {}", "BIO_new_mem_buf");
   bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(data, len));
 
   // Make the mem-BIO return that there is more data
@@ -179,8 +183,10 @@ ParseState Filter::parseClientHello(const void* data, size_t len,
   BIO_set_mem_eof_return(bio.get(), -1);
 
   // We only do reading as we abort the handshake early.
+  ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello- {}", "SSL_set0_rbio");
   SSL_set0_rbio(ssl_.get(), bssl::UpRef(bio).release());
 
+  ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello- {}", "SSL_do_handshake");
   int ret = SSL_do_handshake(ssl_.get());
 
   // This should never succeed because an error is always returned from the SNI callback.

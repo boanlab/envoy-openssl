@@ -106,6 +106,7 @@ enum class CertName { Issuer, Subject };
  * @return std::string returns the desired name formatted as an RFC 2253 name.
  */
 std::string getRFC2253NameFromCertificate(X509& cert, CertName desired_name) {
+  ENVOY_LOG_MISC(info, "[+]getRFC2253NameFromCertificate- {}", "BIO_new");
   bssl::UniquePtr<BIO> buf(BIO_new(BIO_s_mem()));
   RELEASE_ASSERT(buf != nullptr, "");
 

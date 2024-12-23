@@ -13,19 +13,16 @@ if(BUILD_BORINGSSL)
   ExternalProject_Get_Property(BoringSSL INSTALL_DIR)
   file(MAKE_DIRECTORY ${INSTALL_DIR}/include)
 
-  add_library(BoringSSL::SSL STATIC IMPORTED GLOBAL)
-  set_property(TARGET BoringSSL::SSL PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/lib/libssl.a)
+  add_library(BoringSSL::SSL SHARED IMPORTED GLOBAL)
+  set_property(TARGET BoringSSL::SSL PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/lib/libssl.so)
   set_property(TARGET BoringSSL::SSL PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${INSTALL_DIR}/include)
   add_dependencies(BoringSSL::SSL BoringSSL)
 
-  add_library(BoringSSL::Crypto STATIC IMPORTED GLOBAL)
-  set_property(TARGET BoringSSL::Crypto PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/lib/libcrypto.a)
+  add_library(BoringSSL::Crypto SHARED IMPORTED GLOBAL)
+  set_property(TARGET BoringSSL::Crypto PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/lib/libcrypto.so)
   set_property(TARGET BoringSSL::Crypto PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${INSTALL_DIR}/include)
   add_dependencies(BoringSSL::Crypto BoringSSL)
 endif(BUILD_BORINGSSL)
-
-# 사실상 위 옵션은 없는 내용임, boringssl 라이브러리를 빌드할 이유는 없음
-# 아래 내용은 bssl에 대한 함수 정의임
 
 add_custom_target(bssl-gen)
 

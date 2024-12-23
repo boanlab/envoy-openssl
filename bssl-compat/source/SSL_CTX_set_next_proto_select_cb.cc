@@ -7,7 +7,7 @@ void SSL_CTX_set_next_proto_select_cb( SSL_CTX *ctx, int (*cb)(SSL *ssl, uint8_t
 #ifdef ossl_SSL_CTX_set_next_proto_select_cb
   return ossl_SSL_CTX_set_next_proto_select_cb(ctx, cb, arg);
 #else
-  //bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_next_proto_select_cb");
+  bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_next_proto_select_cb");
   return ossl.ossl_SSL_CTX_set_next_proto_select_cb(ctx, cb, arg);
 #endif
 }

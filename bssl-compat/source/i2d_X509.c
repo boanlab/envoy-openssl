@@ -19,7 +19,7 @@
  * output.
  */
 int i2d_X509(X509 *x509, uint8_t **outp) {
-  //bssl_compat_info("[+]BIO_METHOD::i2d_X509");
+  bssl_compat_info("[+]BIO_METHOD::i2d_X509");
   ossl_BIO *bio = ossl.ossl_BIO_new(ossl.ossl_BIO_s_mem());
   int length = -1;
 

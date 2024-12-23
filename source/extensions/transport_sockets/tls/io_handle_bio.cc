@@ -20,6 +20,7 @@ inline Envoy::Network::IoHandle* bio_io_handle(BIO* bio) {
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 int io_handle_new(BIO* bio) {
+  ENVOY_LOG_MISC(info, "[+]io_handle_new! - {}", "io_handle_new");
   BIO_set_init(bio, 0);
   BIO_set_data(bio, nullptr);
   BIO_clear_flags(bio, ~0);
@@ -28,6 +29,7 @@ int io_handle_new(BIO* bio) {
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 int io_handle_free(BIO* bio) {
+  ENVOY_LOG_MISC(info, "[+]io_handle_new! - {}", "io_handle_free");
   if (bio == nullptr) {
     return 0;
   }
@@ -44,6 +46,7 @@ int io_handle_free(BIO* bio) {
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 int io_handle_read(BIO* b, char* out, int outl) {
+  ENVOY_LOG_MISC(info, "[+]io_handle_new! - {}", "io_handle_read");
   if (out == nullptr) {
     return 0;
   }
@@ -67,6 +70,7 @@ int io_handle_read(BIO* b, char* out, int outl) {
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 int io_handle_write(BIO* b, const char* in, int inl) {
+  ENVOY_LOG_MISC(info, "[+]io_handle_write!- {}", "io_handle_write");
   Envoy::Buffer::RawSlice slice;
   slice.mem_ = const_cast<char*>(in);
   slice.len_ = inl;
@@ -120,7 +124,9 @@ const BIO_METHOD methods_io_handlep = {
 };
 
 // NOLINTNEXTLINE(readability-identifier-naming)
-const BIO_METHOD* BIO_s_io_handle(void) { return &methods_io_handlep; }
+const BIO_METHOD* BIO_s_io_handle(void) { 
+  return &methods_io_handlep; 
+  }
 
 } // namespace
 
@@ -135,6 +141,8 @@ BIO* BIO_new_io_handle(Envoy::Network::IoHandle* io_handle) {
   BIO_set_data(b, io_handle);
   BIO_set_shutdown(b, 0);
   BIO_set_init(b, 1);
+
+  
 
   return b;
 }

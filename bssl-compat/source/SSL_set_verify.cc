@@ -11,7 +11,7 @@ extern "C" void SSL_set_verify(SSL *ssl, int mode, int (*callback)(int ok, X509_
   if(callback) {
     bssl_compat_fatal("%s() : non-null callback is not supported", __func__);
   }
-  //bssl_compat_info("[+]SSL_METHOD::SSL_set_verify");
+  bssl_compat_info("[+]SSL_METHOD::SSL_set_verify");
   ossl.ossl_SSL_set_verify(ssl, mode, callback);
 }
 

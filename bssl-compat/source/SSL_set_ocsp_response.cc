@@ -25,7 +25,7 @@
 typedef std::pair<void*,size_t> OcspResponse;
 
 static int index() {
-  //bssl_compat_info("[+]SSL_METHOD::ssl_apply_deferred_ocsp_response_cb - ossl_SSL_get_ex_new_index");
+  bssl_compat_info("[+]SSL_METHOD::ssl_apply_deferred_ocsp_response_cb - ossl_SSL_get_ex_new_index");
   static int index {ossl.ossl_SSL_get_ex_new_index(0, nullptr, nullptr, nullptr, nullptr)};
   return index;
 }
@@ -35,7 +35,7 @@ static int index() {
  * with the deferred OCSP response that may have been set via SSL_set_ocsp_response()
  */
 static int ssl_apply_deferred_ocsp_response_cb(SSL *ssl, void *arg) {
-  //bssl_compat_info("[+]SSL_METHOD::ssl_apply_deferred_ocsp_response_cb");
+  bssl_compat_info("[+]SSL_METHOD::ssl_apply_deferred_ocsp_response_cb");
   std::unique_ptr<OcspResponse> resp {reinterpret_cast<OcspResponse*>(ossl.ossl_SSL_get_ex_data(ssl, index()))};
 
   if (resp) {
@@ -56,7 +56,7 @@ static int ssl_apply_deferred_ocsp_response_cb(SSL *ssl, void *arg) {
  * ossl_SSL_CTX_set_tlsext_status_cb() later on.
  */
 extern "C" int SSL_set_ocsp_response(SSL *ssl, const uint8_t *response, size_t response_len) {
-  //bssl_compat_info("[+]SSL_METHOD::SSL_set_ocsp_response");
+  bssl_compat_info("[+]SSL_METHOD::SSL_set_ocsp_response");
   if (void *response_copy {ossl.ossl_OPENSSL_memdup(response, response_len)}) {
     if (in_select_certificate_cb(ssl)) {
 

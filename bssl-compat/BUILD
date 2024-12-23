@@ -20,22 +20,22 @@ cmake(
    cache_entries = {
        "OPENSSL_USE_STATIC_LIBS": "OFF",
        "BUILD_SHARED_LIBS": "ON",
-       "CMAKE_BUILD_WITH_INSTALL_RPATH": "ON",
-       "CMAKE_INSTALL_RPATH_USE_LINK_PATH": "ON",
+       # "CMAKE_BUILD_WITH_INSTALL_RPATH": "ON",
+       # "CMAKE_INSTALL_RPATH_USE_LINK_PATH": "ON",
        "CMAKE_BUILD_TYPE": "Debug",  # Debug 모드 설정
        "CMAKE_CXX_FLAGS_DEBUG": "-g3 -O0 -fno-omit-frame-pointer -fno-inline -fno-eliminate-unused-debug-types -gdwarf-4",  # 디버그 플래그
        "CMAKE_C_FLAGS_DEBUG": "-g3 -O0 -fno-omit-frame-pointer -fno-inline -fno-eliminate-unused-debug-types -gdwarf-4",    # 디버그 플래그
-       "CMAKE_EXE_LINKER_FLAGS": "-rdynamic", # Debug 모드 설정
-       "CMAKE_SHARED_LINKER_FLAGS": "-rdynamic",# Debug 모드 설정
-       "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",# Debug 모드 설정
+       #"CMAKE_EXE_LINKER_FLAGS": "-rdynamic", # Debug 모드 설정
+       #"CMAKE_SHARED_LINKER_FLAGS": "-rdynamic", # Debug 모드 설정
+       # "CMAKE_EXPORT_COMPILE_COMMANDS": "ON", # Debug 모드 설정
    },
    build_args = ["-j"],
    linkopts = [
-       "-Wl,--no-as-needed",
-       "-Wl,--allow-shlib-undefined",
-       "-g", # Debug 모드 설정
-       "-Wl,--export-dynamic", # Debug 모드 설정
-       "-Wl,--build-id", # Debug 모드 설정
+       # "-Wl,--no-as-needed",
+       # "-Wl,--allow-shlib-undefined",
+       # "-g", # Debug 모드 설정
+       # "-Wl,--export-dynamic", # Debug 모드 설정
+       # "-Wl,--build-id", # Debug 모드 설정
    ],
 )
 

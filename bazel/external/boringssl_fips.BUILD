@@ -3,7 +3,7 @@ licenses(["notice"])  # Apache 2
 cc_library(
     name = "crypto",
     srcs = [
-        "crypto/libcrypto.a",
+        "crypto/libcrypto.so",
     ],
     hdrs = glob(["boringssl/include/openssl/*.h"]),
     defines = ["BORINGSSL_FIPS"],
@@ -14,7 +14,7 @@ cc_library(
 cc_library(
     name = "ssl",
     srcs = [
-        "ssl/libssl.a",
+        "ssl/libssl.so",
     ],
     hdrs = glob(["boringssl/include/openssl/*.h"]),
     includes = ["boringssl/include"],
@@ -26,9 +26,9 @@ genrule(
     name = "build",
     srcs = glob(["boringssl/**"]),
     outs = [
-        "crypto/libcrypto.a",
+        "crypto/libcrypto.so",
         "ssl/libssl.a",
     ],
-    cmd = "$(location {}) $(location crypto/libcrypto.a) $(location ssl/libssl.a)".format("@envoy//bazel/external:boringssl_fips.genrule_cmd"),
+    cmd = "$(location {}) $(location crypto/libcrypto.so) $(location ssl/libssl.so)".format("@envoy//bazel/external:boringssl_fips.genrule_cmd"),
     tools = ["@envoy//bazel/external:boringssl_fips.genrule_cmd"],
 )

@@ -8,6 +8,6 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_set_tlsext_status_cb.html
  */
 int SSL_CTX_set_tlsext_status_cb(SSL_CTX *ctx, int (*callback)(SSL *ssl, void *arg)) {
-  //bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_tlsext_status_cb");
+  bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_tlsext_status_cb");
   return ossl.ossl_SSL_CTX_set_tlsext_status_cb(ctx, callback);
 }

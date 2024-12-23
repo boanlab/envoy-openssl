@@ -1,4 +1,5 @@
 #include <openssl/pem.h>
+#include <openssl/evp.h>
 #include <ossl.h>
 #include "log.h"
 
@@ -11,45 +12,84 @@
  * slightly different behaviour in the case where an error occurs *and* a non-null
  * |sk| value was passed in.
  */
+// extern "C" STACK_OF(X509_INFO) *PEM_X509_INFO_read_bio(BIO *bp, STACK_OF(X509_INFO) *sk, pem_password_cb *cb, void *u) {
+//   if (!bp) return nullptr;
+//   bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-begin");
+
+//   // 스택 생성/재사용 로직 수정
+//   STACK_OF(X509_INFO)* ret = nullptr;
+//   if (sk != nullptr) {
+//     ret = sk;
+//   } else {
+//     ret = sk_X509_INFO_new_null(); 
+//     if (!ret) return nullptr;
+//   }
+//   bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-stack created: %p", (void*)ret);
+
+
+//   char *name = nullptr, *header = nullptr;
+//   unsigned char *data = nullptr;
+//   const unsigned char *p;
+//   long len = 0;
+
+//   int result = ossl.ossl_PEM_read_bio(bp, &name, &header, &data, &len);
+//   if (result <= 0) {
+//     sk_X509_INFO_free(ret);
+//     OPENSSL_free(name);
+//     OPENSSL_free(header);
+//     OPENSSL_free(data);
+//     return nullptr;
+//   }
+
+//   X509_INFO* xi = static_cast<X509_INFO*>(OPENSSL_malloc(sizeof(X509_INFO)));
+//   if (!xi) {
+//     sk_X509_INFO_free(ret);
+//     OPENSSL_free(name);
+//     OPENSSL_free(header);
+//     OPENSSL_free(data);
+//     return nullptr;
+//   }
+
+//   std::memset(xi, 0, sizeof(X509_INFO));
+//   p = data;
+
+//   if (strcmp(name, "CERTIFICATE") == 0) {
+//     bssl_compat_info("[+]PEM_X509_INFO_read_bio - Processing certificate");
+//     // OpenSSL의 X509를 BoringSSL의 X509로 변환
+//     X509* cert = ossl.ossl_d2i_X509(nullptr, &p, len);
+//     if (cert) {
+//       xi->x509 = cert;
+//       // 스택에 추가하기 전에 reference count 증가
+//       X509_up_ref(cert);
+//       if (!sk_X509_INFO_push(ret, xi)) {
+//         X509_INFO_free(xi);
+//         sk_X509_INFO_free(ret);
+//         ret = nullptr;
+//       }
+//     } else {
+//       X509_INFO_free(xi);
+//     }
+//   }
+
+//   OPENSSL_free(name);
+//   OPENSSL_free(header);
+//   OPENSSL_free(data);
+  
+//   bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-end with result: %p", (void*)ret);
+//   return ret;
+// }
 extern "C" STACK_OF(X509_INFO) *PEM_X509_INFO_read_bio(BIO *bp, STACK_OF(X509_INFO) *sk, pem_password_cb *cb, void *u) {
-  if (!bp) return nullptr;
-  //bssl_compat_info("[+]SSL_METHOD::PEM_X509_INFO_read_bio-1");
+  STACK_OF(X509_INFO) *saved {sk};
 
-  STACK_OF(X509_INFO)* ret = sk ? sk : sk_X509_INFO_new_null();
-  if (!ret) return nullptr;
+  auto ret {reinterpret_cast<STACK_OF(X509_INFO)*>(ossl.ossl_PEM_X509_INFO_read_bio(bp, nullptr, cb, u))};
 
-  char *name = nullptr, *header = nullptr;
-  unsigned char *data = nullptr;
-  const unsigned char *p;
-  long len = 0;
-
-  int result = ossl.ossl_PEM_read_bio(bp, &name, &header, &data, &len);
-  if (result <= 0) {
-    OPENSSL_free(name);
-    OPENSSL_free(header);
-    OPENSSL_free(data);
-    return ret;
-  }
-  bssl::UniquePtr<X509_INFO> xi(static_cast<X509_INFO*>(OPENSSL_malloc(sizeof(X509_INFO))));
-  if (xi) {
-    memset(xi.get(), 0, sizeof(X509_INFO));
-    p = data;
-    if (strcmp(name, "CERTIFICATE") == 0) {
-      xi->x509 = ossl.ossl_d2i_X509(nullptr, &p, len);
-    } else if (strcmp(name, "X509 CRL") == 0) {
-      xi->crl = ossl.ossl_d2i_X509_CRL(nullptr, &p, len);
+  if ((ret != nullptr) && (saved != nullptr)) {
+    for (size_t i = 0, max = sk_X509_INFO_num(ret); i < max; i++) {
+      sk_X509_INFO_push(saved, sk_X509_INFO_value(ret, i));
     }
-
-    if (xi->x509 || xi->crl) {
-      if (sk_X509_INFO_push(ret, xi.get())) {
-        xi.release();
-      }
-    }
+    sk_X509_INFO_free(ret);
+    ret = saved;
   }
-
-  OPENSSL_free(name);
-  OPENSSL_free(header);
-  OPENSSL_free(data);
 
   return ret;
 }

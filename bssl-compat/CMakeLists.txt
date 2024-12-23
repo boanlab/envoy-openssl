@@ -45,13 +45,13 @@ add_dependencies(bssl-gen ossl-gen) # generate ossl headers before bssl headers
 
 # custom mappings
 add_library(bssl-compat SHARED
-  source/SSL_CTX_set_reverify_on_resume.cc # Added for compatibility!
-  source/SSL_set_enforce_rsa_key_usage.cc # Added for compatibility!
-  source/EVP_DigestInit.cc # Added for compatibility!
-  source/EVP_MD_CTX_init.cc # Added for compatibility!
-  source/EVP_MD_CTX_cleanup.cc # Added for compatibility!
-  source/BN_init.cc # Added for compatibility!
-  source/SSL_CTX_get_cert_store.cc
+  # source/SSL_CTX_set_reverify_on_resume.cc # Added for compatibility!
+  # source/SSL_set_enforce_rsa_key_usage.cc # Added for compatibility!
+  # source/EVP_DigestInit.cc # Added for compatibility!
+  # source/EVP_MD_CTX_init.cc # Added for compatibility!
+  # source/EVP_MD_CTX_cleanup.cc # Added for compatibility!
+  # source/BN_init.cc # Added for compatibility!
+  # source/SSL_CTX_get_cert_store.cc # Added for compatibility!
   source/ASN1_TIME_free.cc
   source/BASIC_CONSTRAINTS_free.cc
   source/BASIC_CONSTRAINTS_new.cc
@@ -147,7 +147,7 @@ add_library(bssl-compat SHARED
   source/SSL_CTX_sess_set_new_cb.cc
   source/SSL_CTX_set_alpn_select_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
-  # source/SSL_CTX_set_ciphersuites.cc # Added for compatibility!
+  source/SSL_CTX_set_ciphersuites.cc # Added for compatibility!
   source/SSL_CTX_set_client_CA_list.cc
   source/SSL_CTX_set_custom_verify.cc
   source/SSL_CTX_set_next_protos_advertised_cb.cc
@@ -185,7 +185,7 @@ add_library(bssl-compat SHARED
   source/SSL_get_signature_algorithm_key_type.cc
   source/SSL_get_signature_algorithm_name.c
   source/SSL_is_signature_algorithm_rsa_pss.cc
-  source/SSL_new.cc  
+  # source/SSL_new.cc  
   source/SSL_send_fatal_alert.cc
   source/SSL_SESSION_from_bytes.c
   source/SSL_SESSION_get_ticket_lifetime_hint.cc
@@ -394,7 +394,7 @@ target_add_bssl_function(bssl-compat
   EVP_DecryptUpdate
   EVP_DigestFinal
   EVP_DigestFinal_ex
-  # EVP_DigestInit # Commented for compatibility!
+  EVP_DigestInit # Commented for compatibility!
   EVP_DigestInit_ex
   EVP_DigestSignInit
   EVP_DigestSignUpdate
@@ -446,7 +446,7 @@ target_add_bssl_function(bssl-compat
   OPENSSL_realloc
   OPENSSL_init_ssl
   PEM_bytes_read_bio
-  PEM_read_bio # Added for compatibility!
+  # PEM_read_bio # Added for compatibility!
   # PEM_X509_INFO_read_bio # Added for compatibility!
   PKCS12_free
   RSA_bits
@@ -482,7 +482,7 @@ target_add_bssl_function(bssl-compat
   SSL_CTX_set_tmp_ecdh
   SSL_get0_next_proto_negotiated
   SSL_CTX_free
-  # SSL_CTX_get_cert_store # Added for compatibility!
+  SSL_CTX_get_cert_store # Added for compatibility!
   SSL_CTX_set_cert_store
   SSL_CTX_get_ex_data
   SSL_CTX_get_options
@@ -525,7 +525,7 @@ target_add_bssl_function(bssl-compat
   SSL_get1_session
   SSL_is_server
   SSL_is_init_finished
-  # SSL_new # Added for compatibility!
+  SSL_new # Added for compatibility!
   SSL_read
   SSL_select_next_proto
   SSL_SESSION_free
@@ -645,17 +645,18 @@ target_add_bssl_source(bssl-compat
 set(ENV{OPENSSL_INSTALL_DIR} ${OPENSSL_INSTALL_DIR})
 set(ENV{OPENSSL_LIBRARY_DIR} ${OPENSSL_LIBRARY_DIR})
 set(ENV{OPENSSL_MODULES_DIR} ${OPENSSL_MODULES_DIR})
-# set(ENV{LD_LIBRARY_PATH} "${OPENSSL_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH}")
+set(ENV{LD_LIBRARY_PATH} "${OPENSSL_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH}")
 
 target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/source)
-target_link_libraries(bssl-compat PRIVATE ${CMAKE_DL_LIBS} dl)
-set_target_properties(bssl-compat PROPERTIES
-    POSITION_INDEPENDENT_CODE ON
-    LINK_FLAGS "-Wl,-rpath,${OPENSSL_LIBRARY_DIR}"
-)
+target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
+# target_link_libraries(bssl-compat PRIVATE ${CMAKE_DL_LIBS} dl)
+# set_target_properties(bssl-compat PROPERTIES
+#     POSITION_INDEPENDENT_CODE ON
+#     LINK_FLAGS "-Wl,-rpath,${OPENSSL_LIBRARY_DIR}"
+# )
 
 ################################################################################
 # Intallation
@@ -729,21 +730,14 @@ set(utests-source-list
 ################################################################################
 # Unit Tests built on bssl-compat
 ################################################################################
-set(BSSL_COMPAT_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-
 add_executable(utests-bssl-compat ${utests-source-list})
 target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 # Add env variable SANITIZE_OPTIONS for optional sanitizers
 target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
-set_target_properties(utests-bssl-compat 
-    PROPERTIES 
-    BUILD_RPATH "${OPENSSL_LIBRARY_DIR};${CMAKE_CURRENT_BINARY_DIR};${BSSL_COMPAT_INSTALL_DIR}"
-    INSTALL_RPATH "${OPENSSL_LIBRARY_DIR};${CMAKE_CURRENT_BINARY_DIR};${BSSL_COMPAT_INSTALL_DIR}"
-    BUILD_WITH_INSTALL_RPATH TRUE
-)
-# gtest_discover_tests(utests-bssl-compat)
+set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_LIBRARY_DIR}")
+gtest_discover_tests(utests-bssl-compat)
 
 ################################################################################
 # Unit Tests built on BoringSSL

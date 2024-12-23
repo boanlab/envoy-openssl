@@ -129,8 +129,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
 
     SSL_CTX_set_ciphersuites(ctx.ssl_ctx_.get(), config.cipherSuites().c_str());
     SSL_CTX_set_strict_cipher_list(ctx.ssl_ctx_.get(), config.cipherSuites().c_str());
-
-
+    
     /*
     // This figure has benn modified for add TLS 1.3 configuration with SSL_CTX_set_ciphersuites()
     // with openssl What I intended is to use custom header file for the configuration function

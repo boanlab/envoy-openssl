@@ -9,6 +9,6 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_SESSION_get_protocol_version.html
  */
 extern "C" const char *SSL_SESSION_get_version(const SSL_SESSION *session) {
-  //bssl_compat_info("[+]SSL_METHOD::SSL_SESSION_get_version");
+  bssl_compat_info("[+]SSL_METHOD::SSL_SESSION_get_version");
   return TLS_VERSION_to_string(ossl.ossl_SSL_SESSION_get_protocol_version(session));
 }

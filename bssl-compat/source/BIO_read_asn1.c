@@ -13,7 +13,7 @@
 // on the first read. |out_eof_on_first_read| may be NULL to discard the value.
 static int bio_read_full(BIO *bio, uint8_t *out, int *out_eof_on_first_read,
                          size_t len) {
-  //bssl_compat_info("[+]BIO_METHOD::bio_read_full");
+  bssl_compat_info("[+]BIO_METHOD::bio_read_full");
   int first_read = 1;
   while (len > 0) {
     int todo = len <= INT_MAX ? (int)len : INT_MAX;
@@ -43,7 +43,7 @@ static int bio_read_full(BIO *bio, uint8_t *out, int *out_eof_on_first_read,
 static int bio_read_all(BIO *bio, uint8_t **out, size_t *out_len,
                         const uint8_t *prefix, size_t prefix_len,
                         size_t max_len) {
-  //bssl_compat_info("[+]BIO_METHOD::bio_read_all");
+  bssl_compat_info("[+]BIO_METHOD::bio_read_all");
   static const size_t kChunkSize = 4096;
 
   size_t len = prefix_len + kChunkSize;

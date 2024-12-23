@@ -12,9 +12,9 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_CIPHER_get_name.html
  */
 extern "C" int SSL_CTX_set_strict_cipher_list(SSL_CTX *ctx, const char *str) {
-  
+
   std::string osslstr {iana_2_ossl_names(str)};
-  //bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_strict_cipher_list");
+  bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_strict_cipher_list");
   // OpenSSL's SSL_CTX_set_cipher_list() performs virtually no checking on str.
   // It only returns 0 (fail) if no cipher could be selected from the list at
   // all. Otherwise it returns 1 (pass) even if there is only one cipher in the
@@ -23,11 +23,11 @@ extern "C" int SSL_CTX_set_strict_cipher_list(SSL_CTX *ctx, const char *str) {
     return 0;
   }
 
-   //bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_strict_cipher_list - ossl_SSL_CTX_get_ciphers");
-   STACK_OF(SSL_CIPHER)* ciphers = reinterpret_cast<STACK_OF(SSL_CIPHER)*>(ossl.ossl_SSL_CTX_get_ciphers(ctx));
-   char* dup = strdup(osslstr.c_str());
-   char* token = strtok(dup, ":+![|]");
-   while (token != NULL) {
+  bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_strict_cipher_list - ossl_SSL_CTX_get_ciphers");
+  STACK_OF(SSL_CIPHER)* ciphers = reinterpret_cast<STACK_OF(SSL_CIPHER)*>(ossl.ossl_SSL_CTX_get_ciphers(ctx));
+  char* dup = strdup(osslstr.c_str());
+  char* token = strtok(dup, ":+![|]");
+  while (token != NULL) {
      std::string str1(token);
      bool found = false;
      for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); i++) {
@@ -46,5 +46,6 @@ extern "C" int SSL_CTX_set_strict_cipher_list(SSL_CTX *ctx, const char *str) {
      token = strtok(NULL, ":[]|");
    }
    free(dup);
+   //bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_strict_cipher_list-found_token: %s", token);
    return 1;
 }

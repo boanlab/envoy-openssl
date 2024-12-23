@@ -445,10 +445,13 @@ void MyFrontendAction::EndSourceFileAction() {
       funcmap[header].push_back(f);
     }
     hstr << std::endl;
+    hstr << "#include <signal.h>" <<std::endl;
+    hstr << std::endl;
     hstr << "#ifdef __cplusplus" << std::endl
          << "extern \"C\" {" << std::endl
          << "#endif" << std::endl   
          << "const char* get_ssl_implementation(void);" << std::endl
+         << "void signal_handler(int signo, siginfo_t *info, void *context);" << std::endl
          << "#ifdef __cplusplus" << std::endl
          << "}" << std::endl
          << "#endif" << std::endl
@@ -519,7 +522,7 @@ void MyFrontendAction::EndSourceFileAction() {
          << "    return impl ? impl : DEFAULT_SSL_IMPL;" << std::endl
          << "}" << std::endl
          << std::endl
-         << "void print_memory_maps(void) {" << std::endl
+         << "void print_memory_maps(void) {" << std::endl                                                                       //print_memory_maps function
          << "  char buf[256];" << std::endl
          << "  FILE* fp = fopen(\"/proc/self/maps\", \"r\");" << std::endl
          << "  if (fp != NULL) {" << std::endl
@@ -548,7 +551,7 @@ void MyFrontendAction::EndSourceFileAction() {
          << "  return NULL;" << std::endl
          << "}" << std::endl
          << std::endl
-         << "void *b_lookup(const char *symbol) {" << std::endl                                                                   //b_lookup function
+         << "void *b_lookup(const char *symbol) {" << std::endl                                                                  //b_lookup function
          << "  void *result;" << std::endl
          << "  const char *s = symbol;" << std::endl
          << "  int has_prefix = 0;" << std::endl
@@ -634,7 +637,7 @@ void MyFrontendAction::EndSourceFileAction() {
          << "  sigaction(SIGSEGV, &sa, NULL);  // SIGSEGV Handler" << std::endl
          << "  sigaction(SIGABRT, &sa, NULL);  // SIGABRT Handler" << std::endl
          << std::endl
-         << "if (!ssl_impl || strncmp(ssl_impl, BSSL_IMPL, 4) == 0) {"                                                                //boringssl routine
+         << "if (!ssl_impl || strncmp(ssl_impl, BSSL_IMPL, 4) == 0) {"                                                               //boringssl routine
          << "    //Constructor fuction for BoringSSL" << std::endl
          << "    if((libcrypto = dlopen(B_LIBCRYPTO_SO, RTLD_NOW | RTLD_GLOBAL)) == NULL) {" << std::endl
          << "      fprintf(stderr, \"dlopen(%s) : %s\\n\", B_LIBCRYPTO_SO, dlerror());" << std::endl

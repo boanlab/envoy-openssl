@@ -132,6 +132,7 @@ public:
   void raiseEvent(ConnectionEvent event) override;
   // Should the read buffer be drained?
   bool shouldDrainReadBuffer() override {
+    ENVOY_LOG_MISC(info, "[+]ConnectionImpl::shouldDrainReadBuffer, read_buffer_->length - {}", read_buffer_->length());
     return read_buffer_limit_ > 0 && read_buffer_->length() >= read_buffer_limit_;
   }
   // Mark read buffer ready to read in the event loop. This is used when yielding following

@@ -11,7 +11,7 @@ void CRYPTO_BUFFER_free(CRYPTO_BUFFER *buf) {
   if (buf == NULL) {
     return;
   }
-  //bssl_compat_info("[+]BIO_METHOD::CRYPTO_BUFFER_free");
+  bssl_compat_info("[+]BIO_METHOD::CRYPTO_BUFFER_free");
   OPENSSL_free(buf->data);
   OPENSSL_free(buf);
 }
