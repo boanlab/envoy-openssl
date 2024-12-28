@@ -19,6 +19,8 @@ extern "C" int SSL_CTX_set_strict_cipher_list(SSL_CTX *ctx, const char *str) {
   // It only returns 0 (fail) if no cipher could be selected from the list at
   // all. Otherwise it returns 1 (pass) even if there is only one cipher in the
   // string that makes sense, and the rest are unsupported or even just rubbish.
+  ossl.ossl_SSL_CTX_set_ciphersuites(ctx, osslstr.c_str());
+
   if (ossl.ossl_SSL_CTX_set_cipher_list(ctx, osslstr.c_str()) == 0) {
     return 0;
   }
@@ -46,6 +48,5 @@ extern "C" int SSL_CTX_set_strict_cipher_list(SSL_CTX *ctx, const char *str) {
      token = strtok(NULL, ":[]|");
    }
    free(dup);
-   //bssl_compat_info("[+]call SSL_METHOD::SSL_CTX_set_strict_cipher_list-found_token: %s", token);
    return 1;
 }

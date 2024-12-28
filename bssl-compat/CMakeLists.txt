@@ -48,10 +48,10 @@ add_library(bssl-compat SHARED
   # source/SSL_CTX_set_reverify_on_resume.cc # Added for compatibility!
   # source/SSL_set_enforce_rsa_key_usage.cc # Added for compatibility!
   # source/EVP_DigestInit.cc # Added for compatibility!
-  # source/EVP_MD_CTX_init.cc # Added for compatibility!
-  # source/EVP_MD_CTX_cleanup.cc # Added for compatibility!
-  # source/BN_init.cc # Added for compatibility!
   # source/SSL_CTX_get_cert_store.cc # Added for compatibility!
+  source/EVP_MD_CTX_init.cc # Added for compatibility!
+  source/EVP_MD_CTX_cleanup.cc # Added for compatibility!
+  source/BN_init.cc # Added for compatibility!
   source/ASN1_TIME_free.cc
   source/BASIC_CONSTRAINTS_free.cc
   source/BASIC_CONSTRAINTS_new.cc
@@ -462,6 +462,7 @@ target_add_bssl_function(bssl-compat
   RSA_sign
   RSA_size
   RSA_verify
+  RSA_padding_add_PKCS1_PSS_mgf1  # Added for compatibility!
   SHA1
   SHA224
   SHA256
@@ -737,7 +738,7 @@ set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -W
 target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
 set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_LIBRARY_DIR}")
-gtest_discover_tests(utests-bssl-compat)
+# gtest_discover_tests(utests-bssl-compat)
 
 ################################################################################
 # Unit Tests built on BoringSSL

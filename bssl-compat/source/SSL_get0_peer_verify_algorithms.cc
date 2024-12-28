@@ -1,5 +1,3 @@
-#include <stdlib.h>
-#include <string.h>
 #include <openssl/ssl.h>
 #include <ossl.h>
 #include "log.h"
@@ -9,21 +7,10 @@ static void freefunc(void *parent, void *ptr, CRYPTO_EX_DATA *ad, int idx, long 
   delete[] static_cast<uint16_t*>(ptr);
 }
 
-static const int getExIndex() {
-  const char* ssl_impl = get_ssl_implementation();
-  bssl_compat_info("[+]SSL_METHOD::get_ssl_implementation result: %s", ssl_impl);
-  if (!ssl_impl || strcmp(ssl_impl, "bssl") == 0) {
-    bssl_compat_info("[+]SSL_METHOD::SSL_get0_peer_verify_algorithms-boringssl");
-    return 1;
-  } else if(strcmp(ssl_impl, "ossl") == 0) {
-    bssl_compat_info("[+]SSL_METHOD::SSL_get0_peer_verify_algorithms-openssl");
-    return ossl_CRYPTO_get_ex_new_index(ossl_CRYPTO_EX_INDEX_SSL, 0, nullptr,
-                                                        nullptr, nullptr, freefunc);
-  }
-}
-
 // Allocate a new "exdata" index for holding on to return arrays
-static const int exindex = getExIndex();
+static const int exindex = ossl_CRYPTO_get_ex_new_index(ossl_CRYPTO_EX_INDEX_SSL, 0, nullptr,
+                                                        nullptr, nullptr, freefunc);
+
 
 // SSL_get0_peer_verify_algorithms sets |*out_sigalgs| to an array containing
 // the signature algorithms the peer is able to verify. It returns the length of
@@ -50,12 +37,11 @@ static const int exindex = getExIndex();
 // it either gets deleted in this function when replacing it with a new value,
 // or when the SSL object gets freed, via the freefunc callback.
 OPENSSL_EXPORT size_t SSL_get0_peer_verify_algorithms(const SSL *ssl, const uint16_t **out_sigalgs) {
-  bssl_compat_info("[+]SSL_METHOD::SSL_get0_peer_verify_algorithms");
+  bssl_compat_info("[+]SSL_METHODS::SSL_get0_peer_verify_algorithms - init");
 
   // Delete the previous sigalgs array if there is one from a previous call
   uint16_t *oldsigalgs = static_cast<uint16_t*>(ossl_SSL_get_ex_data(const_cast<SSL*>(ssl), exindex));
   if (oldsigalgs) {
-    bssl_compat_info("[+]SSL_METHOD::ossl_SSL_set_ex_data");
     if(ossl_SSL_set_ex_data(const_cast<SSL*>(ssl), exindex, nullptr) == 0) {
       return 0;
     }
@@ -69,6 +55,7 @@ OPENSSL_EXPORT size_t SSL_get0_peer_verify_algorithms(const SSL *ssl, const uint
   uint16_t *sigalgs = new uint16_t[nsigalgs];
 
   // Put the array into the SSL's exdata so it won't leak
+  bssl_compat_info("[+]SSL_METHODS::SSL_get0_peer_verify_algorithms - ossl_SSL_set_ex_data");
   if(ossl_SSL_set_ex_data(const_cast<SSL*>(ssl), exindex, sigalgs) == 0) {
     delete[] sigalgs;
     return 0;
