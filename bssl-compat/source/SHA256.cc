@@ -34,4 +34,9 @@ int SHA256_Final(uint8_t out[SHA256_DIGEST_LENGTH],
     return ossl.ossl_SHA256_Final(reinterpret_cast<unsigned char *>(out), sha);
 }
 
+void SHA256_Transform(SHA256_CTX *c, const unsigned char *data) {
+    return ossl.ossl_SHA256_Transform(c, data);
+
 }
+
+} // extern "C"

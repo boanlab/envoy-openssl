@@ -49,9 +49,12 @@ add_library(bssl-compat SHARED
   # source/SSL_set_enforce_rsa_key_usage.cc # Added for compatibility!
   # source/EVP_DigestInit.cc # Added for compatibility!
   # source/SSL_CTX_get_cert_store.cc # Added for compatibility!
+  source/AES.cc
   source/EVP_MD_CTX_init.cc # Added for compatibility!
   source/EVP_MD_CTX_cleanup.cc # Added for compatibility!
   source/BN_init.cc # Added for compatibility!
+  source/BN_num_bytes.cc # Added for compatibility!
+  source/BN_bn2le_padded.cc # Added for compatibility!
   source/ASN1_TIME_free.cc
   source/BASIC_CONSTRAINTS_free.cc
   source/BASIC_CONSTRAINTS_new.cc
@@ -70,6 +73,7 @@ add_library(bssl-compat SHARED
   source/BN_cmp_word.cc
   source/BN_bn2hex.cc
   source/BN_bin2bn.cc
+  source/BN_bn2bin.cc
   source/c2i_ASN1_INTEGER.cc
   source/CRYPTO_BUFFER_free.c
   source/CRYPTO_BUFFER.h
@@ -108,6 +112,10 @@ add_library(bssl-compat SHARED
   source/internal.h
   source/log.c
   source/log.h
+  source/MD5_Init.cc
+  source/MD5_Transform.cc
+  source/MD5_Update.cc
+  source/MD5_Final.cc
   source/NAME_CONSTRAINTS_free.cc
   source/NAME_CONSTRAINTS_new.cc
   source/ossl.c
@@ -132,7 +140,12 @@ add_library(bssl-compat SHARED
   source/RSA_private_key_from_bytes.cc
   source/RSA_public_key_from_bytes.cc
   source/RSA_sign_pss_mgf1.cc
+  source/RSA_add_pkcs1_prefix.cc # Added for compatibility!
+  source/SHA1.cc
+  source/SHA224.cc
   source/SHA256.cc
+  source/SHA384.cc
+  source/SHA512.cc
   source/SSL_add_file_cert_subjects_to_stack.cc
   source/SSL_CIPHER_get_kx_nid.cc
   source/SSL_CIPHER_get_min_version.cc
@@ -212,6 +225,7 @@ add_library(bssl-compat SHARED
   source/X509_STORE_CTX_set0_trusted_stack.cc
   source/X509_STORE_CTX_set_verify_cb.cc
   source/X509_verify_cert_error_string.cc
+  source/X509_VERIFY_PARAM_set_time.cc
   source/X509_VERIFY_PARAM_set_time_posix.cc
 )
 
@@ -352,6 +366,7 @@ target_add_bssl_function(bssl-compat
   BN_add_word
   BN_add_word
   BN_add_word
+  BN_is_word
   BN_dup
   BN_free
   BN_hex2bn
@@ -462,6 +477,7 @@ target_add_bssl_function(bssl-compat
   RSA_sign
   RSA_size
   RSA_verify
+  # RSA_add_pkcs1_prefix  # Added for compatibility!
   RSA_padding_add_PKCS1_PSS_mgf1  # Added for compatibility!
   SHA1
   SHA224
