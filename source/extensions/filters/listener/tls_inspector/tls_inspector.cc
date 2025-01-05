@@ -64,7 +64,7 @@ Config::Config(
                                      max_client_hello_size_, size_t(TLS_MAX_CLIENT_HELLO)));
   }
 
-  ENVOY_LOG_MISC(info, "[+]Config::Config - {}", "SSL_CTX_set_min_proto_versio");
+  ENVOY_LOG_MISC(info, "[+]Config::Config - {}", "SSL_CTX_set_min_proto_version");
   SSL_CTX_set_min_proto_version(ssl_ctx_.get(), TLS_MIN_SUPPORTED_VERSION);
   SSL_CTX_set_max_proto_version(ssl_ctx_.get(), TLS_MAX_SUPPORTED_VERSION);
   SSL_CTX_set_options(ssl_ctx_.get(), SSL_OP_NO_TICKET);

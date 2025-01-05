@@ -8,8 +8,7 @@
 int print_ctx_info() {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     if (ctx) {
-        bssl_compat_info("Allocated EVP_MD_CTX size: %zu bytes\n", 
-               malloc_usable_size(ctx));  // malloc_usable_size는 glibc 확장
+        bssl_compat_info("Allocated EVP_MD_CTX size: %zu bytes", malloc_usable_size(ctx));
         EVP_MD_CTX_free(ctx);
     }
     return 0;

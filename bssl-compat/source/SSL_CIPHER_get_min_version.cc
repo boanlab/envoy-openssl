@@ -30,11 +30,13 @@ extern "C" uint16_t SSL_CIPHER_get_min_version(const SSL_CIPHER *cipher) {
 
   if ((ossl.ossl_SSL_CIPHER_get_kx_nid(cipher) == ossl_NID_kx_any) ||
       (ossl.ossl_SSL_CIPHER_get_auth_nid(cipher) == ossl_NID_auth_any)) {
+    bssl_compat_info("[+]SSL_METHOD::SSL_CIPHER_get_min_version: TLSV1_3");
     return TLS1_3_VERSION;
   }
 
   const EVP_MD *digest = ossl.ossl_SSL_CIPHER_get_handshake_digest(cipher);
   if ((digest == nullptr) || (ossl.ossl_EVP_MD_get_type(digest) != NID_md5_sha1)) {
+    bssl_compat_info("[+]SSL_METHOD::SSL_CIPHER_get_min_version: TLSV1_2");
     return TLS1_2_VERSION;
   }
 

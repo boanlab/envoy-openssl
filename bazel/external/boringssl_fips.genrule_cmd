@@ -133,5 +133,5 @@ ninja run_tests
 
 # Move compiled libraries to the expected destinations.
 popd
-mv $ROOT/boringssl/build/crypto/libcrypto.so $1
-mv $ROOT/boringssl/build/ssl/libssl.so $2
+mv $ROOT/boringssl/build/crypto/libcrypto.a $1
+mv $ROOT/boringssl/build/ssl/libssl.a $2

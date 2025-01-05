@@ -45,6 +45,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef BIGNUM \
   --uncomment-typedef-redef BUF_MEM \
   --uncomment-typedef-redef BIO \
+  --uncomment-typedef-redef X509_PKEY \
   --uncomment-typedef-redef BN_GENCB \
   --uncomment-typedef-redef EC_GROUP \
   --uncomment-typedef-redef EC_KEY \

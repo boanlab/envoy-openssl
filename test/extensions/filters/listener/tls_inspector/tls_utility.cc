@@ -19,6 +19,7 @@ std::vector<uint8_t> generateClientHello(uint16_t tls_min_version, uint16_t tls_
   bssl::UniquePtr<SSL> ssl(SSL_new(ctx.get()));
 
   // Ownership of these is passed to *ssl
+  ENVOY_LOG_MISC(info, "[+]generateClientHello - {}", "BIO_new");
   BIO* in = BIO_new(BIO_s_mem());
   BIO* out = BIO_new(BIO_s_mem());
   SSL_set_bio(ssl.get(), in, out);
@@ -33,6 +34,7 @@ std::vector<uint8_t> generateClientHello(uint16_t tls_min_version, uint16_t tls_
     SSL_set_alpn_protos(ssl.get(), reinterpret_cast<const uint8_t*>(alpn.data()), alpn.size());
   }
   SSL_do_handshake(ssl.get());
+  ENVOY_LOG_MISC(info, "[+]generateClientHello - {}", "SSL_do_handshake");
   const uint8_t* data = nullptr;
   size_t data_len = 0;
   BIO_mem_contents(out, &data, &data_len);

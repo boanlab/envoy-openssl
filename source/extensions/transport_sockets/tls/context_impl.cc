@@ -127,7 +127,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
     // the ciphersuites configuration section has been hard coded to test seperately configuring
     // context
 
-    SSL_CTX_set_ciphersuites(ctx.ssl_ctx_.get(), config.cipherSuites().c_str());
+    //SSL_CTX_set_ciphersuites(ctx.ssl_ctx_.get(), config.cipherSuites().c_str());
     SSL_CTX_set_strict_cipher_list(ctx.ssl_ctx_.get(), config.cipherSuites().c_str());
     
     /*
@@ -332,11 +332,13 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
 
 // config
 #if BORINGSSL_API_VERSION >= 21
+  ENVOY_LOG_MISC(info, "[+]ContextImpl::ContextImpl - {}", "SSL_get_all_cipher_names()");
   // Register stat names based on lists reported by BoringSSL.
   std::vector<const char*> list(SSL_get_all_cipher_names(nullptr, 0));
   SSL_get_all_cipher_names(list.data(), list.size());
   stat_name_set_->rememberBuiltins(list);
 
+  ENVOY_LOG_MISC(info, "[+]ContextImpl::ContextImpl - {}", "SSL_get_all_curve_names()");
   list.resize(SSL_get_all_curve_names(nullptr, 0));
   SSL_get_all_curve_names(list.data(), list.size());
   stat_name_set_->rememberBuiltins(list);
@@ -354,6 +356,8 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
   // Note that if a negotiated cipher suite is outside of this set, we'll issue an ENVOY_BUG.
   for (TlsContext& tls_context : tls_contexts_) {
     for (const SSL_CIPHER* cipher : SSL_CTX_get_ciphers(tls_context.ssl_ctx_.get())) {
+      ENVOY_LOG_MISC(info, "[+]ContextImpl::ContextImpl - {}", "SSL_CIPHER_get_name()");
+      ENVOY_LOG_MISC(info, "[+]ContextImpl::ContextImpl - Cipher name: {}", SSL_CIPHER_get_name(cipher));
       stat_name_set_->rememberBuiltin(SSL_CIPHER_get_name(cipher));
     }
   }
@@ -1085,7 +1089,7 @@ ServerContextImpl::generateHashForSessionContextId(const std::vector<std::string
   static_assert(session_id.size() == SHA256_DIGEST_LENGTH, "hash size mismatch");
   static_assert(session_id.size() == SSL_MAX_SSL_SESSION_ID_LENGTH, "TLS session ID size mismatch");
 
-  rc = EVP_DigestFinal(md.get(), session_id.data(), &hash_length);
+  rc = EVP_DigestFinal_ex(md.get(), session_id.data(), &hash_length);
   RELEASE_ASSERT(rc == 1, Utility::getLastCryptoError().value_or(""));
   RELEASE_ASSERT(hash_length == session_id.size(),
                  "SHA256 hash length must match TLS Session ID size");
