@@ -24,3 +24,4 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro TLS1_3_CK_AES_128_GCM_SHA256 \
   --uncomment-macro TLS1_3_CK_AES_256_GCM_SHA384 \
   --uncomment-macro TLS1_3_CK_CHACHA20_POLY1305_SHA256
+  

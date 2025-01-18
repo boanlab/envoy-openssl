@@ -144,6 +144,7 @@ void UpstreamCodecFilter::CodecBridge::decodeHeaders(Http::ResponseHeaderMapPtr&
                                                      bool end_stream) {
   // TODO(rodaine): This is actually measuring after the headers are parsed and not the first
   // byte.
+  // ENVOY_LOG_MISC(info, "[+]UpstreamCodecFilter::CodecBridge::decodeHeaders");
   filter_.upstreamTiming().onFirstUpstreamRxByteReceived(
       filter_.callbacks_->dispatcher().timeSource());
 
@@ -156,15 +157,18 @@ void UpstreamCodecFilter::CodecBridge::decodeHeaders(Http::ResponseHeaderMapPtr&
     filter_.callbacks_->continueDecoding();
   }
 
+  // ENVOY_LOG_MISC(info, "[+]UpstreamCodecFilter::CodecBridge::decodeHeaders - 2");
   if (filter_.callbacks_->upstreamCallbacks()->pausedForWebsocketUpgrade()) {
     const uint64_t status = Http::Utility::getResponseStatus(*headers);
     const auto protocol = filter_.callbacks_->upstreamCallbacks()->upstreamStreamInfo().protocol();
     if (status == static_cast<uint64_t>(Http::Code::SwitchingProtocols) ||
         (protocol.has_value() && protocol.value() != Envoy::Http::Protocol::Http11)) {
+      // ENVOY_LOG_MISC(info, "[+]UpstreamCodecFilter::CodecBridge::decodeHeaders - 3");
       // handshake is finished and continue the data processing.
       filter_.callbacks_->upstreamCallbacks()->setPausedForWebsocketUpgrade(false);
       filter_.callbacks_->continueDecoding();
     } else {
+      // ENVOY_LOG_MISC(info, "[+]UpstreamCodecFilter::CodecBridge::decodeHeaders - 4");
       // Other status, e.g., 426 or 200, indicate a failed handshake, Envoy as a proxy will proxy
       // back the response header to downstream and then close the request, since WebSocket
       // just needs headers for handshake per RFC-6455. Note: HTTP/2 200 will be normalized to

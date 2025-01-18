@@ -508,7 +508,7 @@ Host::CreateConnectionData HostImpl::createConnection(
 
   connection->connectionInfoSetter().enableSettingInterfaceName(
       cluster.setLocalInterfaceNameOnUpstreamConnections());
-  ENVOY_LOG_MISC(info, "[+]Host::CreateConnectionData HostImpl::createConnection - {}", cluster.perConnectionBufferLimitBytes());
+  // // ENVOY_LOG_MISC(info, "[+]Host::CreateConnectionData HostImpl::createConnection - {}", cluster.perConnectionBufferLimitBytes());
   connection->setBufferLimits(cluster.perConnectionBufferLimitBytes()); // modifed for debug!
   cluster.createNetworkFilterChain(*connection);
   return {std::move(connection), std::move(host)};

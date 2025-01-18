@@ -9,7 +9,7 @@
  * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/pool.h#L48
  */
 CRYPTO_BUFFER *CRYPTO_BUFFER_new(const uint8_t *data, size_t len, CRYPTO_BUFFER_POOL *pool) {
-  bssl_compat_info("[+]BIO_METHOD::CRYPTO_BUFFER_new");
+  // bssl_compat_info("[+]BIO_METHOD::CRYPTO_BUFFER_new");
   if(pool) {
     bssl_compat_fatal("%s() with non-null pool not implemented", __func__);
   }

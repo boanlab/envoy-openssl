@@ -50,3 +50,4 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl sk_is_sorted \
   --uncomment-func-decl sk_set_cmp_func \
   --uncomment-func-decl sk_deep_copy \
+  

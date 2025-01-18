@@ -67,11 +67,12 @@ absl::StatusOr<std::unique_ptr<SslSocket>>
 SslSocket::create(Envoy::Ssl::ContextSharedPtr ctx, InitialState state,
                   const Network::TransportSocketOptionsConstSharedPtr& transport_socket_options,
                   Ssl::HandshakerFactoryCb handshaker_factory_cb) {
-  ENVOY_LOG_MISC(info, "[+]SslSocket::create - {}", "initialize");
+  // ENVOY_LOG_MISC(info, "[+]SslSocket::create - SSL_new");
   std::unique_ptr<SslSocket> socket(new SslSocket(ctx, transport_socket_options));
   auto status = socket->initialize(state, handshaker_factory_cb);
+
   if (status.ok()) {
-    ENVOY_LOG_MISC(info, "[+]SslSocket::create - {}", "status.ok()");
+    // ENVOY_LOG_MISC(info, "[+]SslSocket::create - {}", "status.ok()");
     return socket;
   } else {
     return status;
@@ -85,7 +86,6 @@ SslSocket::SslSocket(Envoy::Ssl::ContextSharedPtr ctx,
 
 absl::Status SslSocket::initialize(InitialState state,
                                    Ssl::HandshakerFactoryCb handshaker_factory_cb) {
-  ENVOY_LOG_MISC(info, "[+]SslSocket::initialize - {}", "initialize_start()");
   auto status_or_ssl = ctx_->newSsl(transport_socket_options_);
   if (!status_or_ssl.ok()) {
     return status_or_ssl.status();
@@ -95,22 +95,20 @@ absl::Status SslSocket::initialize(InitialState state,
       std::move(status_or_ssl.value()), ctx_->sslExtendedSocketInfoIndex(), this));
 
   if (state == InitialState::Client) {
-    ENVOY_LOG_MISC(info, "[+]Filter::Filter- {}", "SSL_set_connect_state - client");
+    // ENVOY_LOG_MISC(info, "[+]SslSocket::initialize - SSL_set_connect_state");
     SSL_set_connect_state(rawSsl());
   } else {
-    ENVOY_LOG_MISC(info, "[+]SslSocket::initialize - {}", "SSL_set_accept_state - server");
+    // ENVOY_LOG_MISC(info, "[+]SslSocket::initialize - SSL_set_accept_state");
     ASSERT(state == InitialState::Server);
     SSL_set_accept_state(rawSsl());
   }
-  
-  ENVOY_LOG_MISC(info, "[+]SslSocket::initialize - {}", "initialize_end()");
+
   return absl::OkStatus();
 }
 
 void SslSocket::setTransportSocketCallbacks(Network::TransportSocketCallbacks& callbacks) {
   ASSERT(!callbacks_);
   callbacks_ = &callbacks;
-  ENVOY_LOG_MISC(info, "[+]SslSocket::setTransportSocketCallbacks - {}", "BIO_new_io_handle");
 
   // Associate this SSL connection with all the certificates (with their potentially different
   // private key methods).
@@ -119,10 +117,12 @@ void SslSocket::setTransportSocketCallbacks(Network::TransportSocketCallbacks& c
   }
 
   // Use custom BIO that reads from/writes to IoHandle
+  // ENVOY_LOG_MISC(info, "[+]SslSocket::setTransportSocketCallbacks - BIO_new_io_handle");
   BIO* bio = BIO_new_io_handle(&callbacks_->ioHandle());
+  // ENVOY_LOG_MISC(info, "[+]SslSocket::setTransportSocketCallbacks - SSL_set_bio");
   SSL_set_bio(rawSsl(), bio, bio);
   SSL_set_ex_data(rawSsl(), ContextImpl::sslSocketIndex(), static_cast<void*>(callbacks_));
-  ENVOY_LOG_MISC(info, "[+]SslSocket::setTransportSocketCallbacks - {}", "SSL_set_ex_data");
+  // // ENVOY_LOG_MISC(info, "[+]SslSocket::setTransportSocketCallbacks - {}", "SSL_set_ex_data");
 }
 
 SslSocket::ReadResult SslSocket::sslReadIntoSlice(Buffer::RawSlice& slice) {
@@ -147,9 +147,10 @@ SslSocket::ReadResult SslSocket::sslReadIntoSlice(Buffer::RawSlice& slice) {
 }
 
 Network::IoResult SslSocket::doRead(Buffer::Instance& read_buffer) {
+  // ENVOY_LOG_MISC(info, "[+]SslSocket::doRead - {}", "start");
   if (info_->state() != Ssl::SocketState::HandshakeComplete &&
       info_->state() != Ssl::SocketState::ShutdownSent) {
-    ENVOY_LOG_MISC(info, "[+]SslSocket::doRead - {}", "doHandShake");
+    // ENVOY_LOG_MISC(info, "[+]SslSocket::doRead - {}", "doHandShake");
     PostIoAction action = doHandshake();
     if (action == PostIoAction::Close || info_->state() != Ssl::SocketState::HandshakeComplete) {
       // end_stream is false because either a hard error occurred (action == Close) or
@@ -226,7 +227,7 @@ void SslSocket::onPrivateKeyMethodComplete() { resumeHandshake(); }
 void SslSocket::resumeHandshake() {
   ASSERT(callbacks_ != nullptr && callbacks_->connection().dispatcher().isThreadSafe());
   ASSERT(info_->state() == Ssl::SocketState::HandshakeInProgress);
-  ENVOY_LOG_MISC(info, "[+]SslSocket::resumeHandshake - {}", "doHandShake");
+  // ENVOY_LOG_MISC(info, "[+]SslSocket::resumeHandshake - {}", "doHandShake");
 
   // Resume handshake.
   PostIoAction action = doHandshake();
@@ -256,7 +257,10 @@ void SslSocket::onSuccess(SSL* ssl) {
 
 void SslSocket::onFailure() { drainErrorQueue(); }
 
-PostIoAction SslSocket::doHandshake() { return info_->doHandshake(); }
+PostIoAction SslSocket::doHandshake() { 
+  // ENVOY_LOG_MISC(info, "[+]SslSocket::doHandshake");
+  return info_->doHandshake(); 
+}
 
 void SslSocket::drainErrorQueue() {
   bool saw_error = false;
@@ -264,6 +268,12 @@ void SslSocket::drainErrorQueue() {
   bool new_ssl_failure_format = Runtime::runtimeFeatureEnabled(
       "envoy.reloadable_features.ssl_transport_failure_reason_format");
   while (uint64_t err = ERR_get_error()) {
+    // // ENVOY_LOG_MISC(info, "[+]SslSocket::drainErrorQueue - {}: {}", "ERR_get_error", err);
+    // // ENVOY_LOG_MISC(info, "[+]SslSocket::drainErrorQueue - {}: {}", "ERR_GET_LIB", ERR_GET_LIB(err));
+    // // ENVOY_LOG_MISC(info, "[+]SslSocket::drainErrorQueue - {}: {}", "ERR_GET_REASON", ERR_GET_REASON(err));
+    // // ENVOY_LOG_MISC(info, "[+]SslSocket::drainErrorQueue - {}: {}", "ERR_LIB_SSL", ERR_LIB_SSL);
+    // // ENVOY_LOG_MISC(info, "[+]SSL error queue: {}, str: {}", err, ERR_error_string(err, nullptr));
+
     if (ERR_GET_LIB(err) == ERR_LIB_SSL) {
       if (ERR_GET_REASON(err) == SSL_R_PEER_DID_NOT_RETURN_A_CERTIFICATE) {
         ctx_->stats().fail_verify_no_cert_.inc();
@@ -304,7 +314,7 @@ void SslSocket::drainErrorQueue() {
 }
 
 Network::IoResult SslSocket::doWrite(Buffer::Instance& write_buffer, bool end_stream) {
-  ENVOY_LOG_MISC(info, "[+]SslSocket::doWrite - {}", "doHandShake");
+  // ENVOY_LOG_MISC(info, "[+]SslSocket::doWrite - doHandshake");
   ASSERT(info_->state() != Ssl::SocketState::ShutdownSent || write_buffer.length() == 0);
   if (info_->state() != Ssl::SocketState::HandshakeComplete &&
       info_->state() != Ssl::SocketState::ShutdownSent) {
@@ -462,17 +472,19 @@ Network::TransportSocketPtr ClientSslSocketFactory::createTransportSocket(
   // onAddOrUpdateSecret() could be invoked in the middle of checking the existence of ssl_ctx and
   // creating SslSocket using ssl_ctx. Capture ssl_ctx_ into a local variable so that we check and
   // use the same ssl_ctx to create SslSocket.
-  ENVOY_LOG_MISC(info, "[+]ClientSslSocketFactory!- {}", "createTransportSocket");
+  //// ENVOY_LOG_MISC(info, "[+]ClientSslSocketFactory!- {}", "createTransportSocket");
   Envoy::Ssl::ClientContextSharedPtr ssl_ctx;
   {
     absl::ReaderMutexLock l(&ssl_ctx_mu_);
     ssl_ctx = ssl_ctx_;
   }
   if (ssl_ctx) {
+    //// ENVOY_LOG_MISC(info, "[+]ClientSslSocketFactory!- {}", "createTransportSocket - create");
     auto status_or_socket =
         SslSocket::create(std::move(ssl_ctx), InitialState::Client, transport_socket_options,
                           config_->createHandshaker());
     if (status_or_socket.ok()) {
+      //// ENVOY_LOG_MISC(info, "[+]ClientSslSocketFactory!- {}", "createTransportSocket - status.ok()");
       return std::move(status_or_socket.value());
     }
     return std::make_unique<ErrorSslSocket>(status_or_socket.status().message());
@@ -517,24 +529,24 @@ Network::TransportSocketPtr ServerSslSocketFactory::createDownstreamTransportSoc
   // onAddOrUpdateSecret() could be invoked in the middle of checking the existence of ssl_ctx and
   // creating SslSocket using ssl_ctx. Capture ssl_ctx_ into a local variable so that we check and
   // use the same ssl_ctx to create SslSocket.
-  ENVOY_LOG_MISC(info, "[+]SslSocket::ServerSslSocketFactory - {}", "createDownstreamTransportSocket");
+  // ENVOY_LOG_MISC(info, "[+]SslSocket::ServerSslSocketFactory - {}", "createDownstreamTransportSocket");
   Envoy::Ssl::ServerContextSharedPtr ssl_ctx;
   {
     absl::ReaderMutexLock l(&ssl_ctx_mu_);
     ssl_ctx = ssl_ctx_;
   }
   if (ssl_ctx) {
-    ENVOY_LOG_MISC(info, "[+]SslSocket::ServerSslSocketFactory - {}", "SslSocket::create1");
+    // ENVOY_LOG_MISC(info, "[+]SslSocket::ServerSslSocketFactory - {}", "SslSocket::create1");
     auto status_or_socket = SslSocket::create(std::move(ssl_ctx), InitialState::Server, nullptr,
                                               config_->createHandshaker());
     if (status_or_socket.ok()) {
-      ENVOY_LOG_MISC(info, "[+]SslSocket::ServerSslSocketFactory - {}", "SslSocket::create2");
+      // ENVOY_LOG_MISC(info, "[+]SslSocket::ServerSslSocketFactory - {}", "SslSocket::create2");
       return std::move(status_or_socket.value());
     }
-    ENVOY_LOG_MISC(info, "[+]SslSocket::ServerSslSocketFactory - {}", "SslSocket::create3");
+    // ENVOY_LOG_MISC(info, "[+]SslSocket::ServerSslSocketFactory - {}", "SslSocket::create3");
     return std::make_unique<ErrorSslSocket>(status_or_socket.status().message());
   } else {
-    ENVOY_LOG_MISC(info, "[+]SslSocket::ServerSslSocketFactory - {}", "SslSocket::create4");
+    // ENVOY_LOG_MISC(info, "[+]SslSocket::ServerSslSocketFactory - {}", "SslSocket::create4");
     ENVOY_LOG(debug, "Create NotReadySslSocket");
     stats_.downstream_context_secrets_not_ready_.inc();
     return std::make_unique<NotReadySslSocket>();

@@ -55,20 +55,20 @@ Config::Config(
       enable_ja3_fingerprinting_(
           PROTOBUF_GET_WRAPPED_OR_DEFAULT(proto_config, enable_ja3_fingerprinting, false)),
       max_client_hello_size_(max_client_hello_size),
-      initial_read_buffer_size_(
-          std::min(PROTOBUF_GET_WRAPPED_OR_DEFAULT(proto_config, initial_read_buffer_size,
-                                                   max_client_hello_size),
-                   max_client_hello_size)) {
+      initial_read_buffer_size_(std::min(PROTOBUF_GET_WRAPPED_OR_DEFAULT(proto_config, initial_read_buffer_size, max_client_hello_size),
+      max_client_hello_size)) {
   if (max_client_hello_size_ > TLS_MAX_CLIENT_HELLO) {
     throw EnvoyException(fmt::format("max_client_hello_size of {} is greater than maximum of {}.",
                                      max_client_hello_size_, size_t(TLS_MAX_CLIENT_HELLO)));
   }
 
-  ENVOY_LOG_MISC(info, "[+]Config::Config - {}", "SSL_CTX_set_min_proto_versio");
+  // ENVOY_LOG_MISC(info, "[+]Config::Config - SSL_CTX_set_min_proto_version");
   SSL_CTX_set_min_proto_version(ssl_ctx_.get(), TLS_MIN_SUPPORTED_VERSION);
+  // ENVOY_LOG_MISC(info, "[+]Config::Config - SSL_CTX_set_max_proto_version");
   SSL_CTX_set_max_proto_version(ssl_ctx_.get(), TLS_MAX_SUPPORTED_VERSION);
   SSL_CTX_set_options(ssl_ctx_.get(), SSL_OP_NO_TICKET);
   SSL_CTX_set_session_cache_mode(ssl_ctx_.get(), SSL_SESS_CACHE_OFF);
+  // ENVOY_LOG_MISC(info, "[+]Config::Config - SSL_CTX_set_select_certificate_cb");
   SSL_CTX_set_select_certificate_cb(
       ssl_ctx_.get(), [](const SSL_CLIENT_HELLO* client_hello) -> ssl_select_cert_result_t {
         Filter* filter = static_cast<Filter*>(SSL_get_app_data(client_hello->ssl));
@@ -87,21 +87,23 @@ Config::Config(
         Filter* filter = static_cast<Filter*>(SSL_get_app_data(ssl));
         filter->onServername(
             absl::NullSafeStringView(SSL_get_servername(ssl, TLSEXT_NAMETYPE_host_name)));
-
         // Return an error to stop the handshake; we have what we wanted already.
         *out_alert = SSL_AD_USER_CANCELLED;
         return SSL_TLSEXT_ERR_OK;
       });
 }
 
-bssl::UniquePtr<SSL> Config::newSsl() { return bssl::UniquePtr<SSL>{SSL_new(ssl_ctx_.get())}; }
+bssl::UniquePtr<SSL> Config::newSsl() {
+  // ENVOY_LOG_MISC(info, "[+]Config::newSsl - SSL_new");
+  return bssl::UniquePtr<SSL>{SSL_new(ssl_ctx_.get())}; 
+}
 
 Filter::Filter(const ConfigSharedPtr& config)
     : config_(config), ssl_(config_->newSsl()),
       requested_read_bytes_(config->initialReadBufferSize()) {
-  ENVOY_LOG_MISC(info, "[+]Filter::Filter- {}", "SSL_set_app_data");
+  // // ENVOY_LOG_MISC(info, "[+]Filter::Filter- {}", "SSL_set_app_data");
   SSL_set_app_data(ssl_.get(), this);
-  ENVOY_LOG_MISC(info, "[+]Filter::Filter- {}", "SSL_set_accept_state");
+  // ENVOY_LOG_MISC(info, "[+]Filter::Filter - SSL_set_accept_state");
   SSL_set_accept_state(ssl_.get());
 }
 
@@ -139,6 +141,7 @@ void Filter::onServername(absl::string_view name) {
     cb_->socket().setRequestedServerName(name);
     ENVOY_LOG(debug, "tls:onServerName(), requestedServerName: {}", name);
   } else {
+    // ENVOY_LOG_MISC(info, "[+]Filter::onServername - SNI_NOT_FOUND");
     config_->stats().sni_not_found_.inc();
   }
   clienthello_success_ = true;
@@ -174,19 +177,42 @@ Network::FilterStatus Filter::onData(Network::ListenerFilterBuffer& buffer) {
 
 ParseState Filter::parseClientHello(const void* data, size_t len,
                                     uint64_t bytes_already_processed) {
+
+  //입력 데이터 검증을 위한 로깅 추가
+  const unsigned char* input_data = static_cast<const unsigned char*>(data);
+  ENVOY_LOG_MISC(debug, "[+]Filter::parseClientHello - Input data first 11 bytes:");
+  for(size_t i = 0; i < std::min(len, size_t(11)); i++) {
+    ENVOY_LOG_MISC(debug, "[+]byte {}: {:#x}", i, input_data[i]);
+  }
+  
   // Ownership remains here though we pass a reference to it in `SSL_set0_rbio()`.
-  ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello- {}", "BIO_new_mem_buf");
+  // ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello - BIO_new_mem_buf");
   bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(data, len));
+
+  // BIO 상태 확인
+  long bio_size = BIO_get_mem_data(bio.get(), nullptr);
+  ENVOY_LOG_MISC(debug, "[+]Filter::parseClientHello - BIO size after creation: {}", bio_size);
 
   // Make the mem-BIO return that there is more data
   // available beyond it's end.
   BIO_set_mem_eof_return(bio.get(), -1);
 
   // We only do reading as we abort the handshake early.
-  ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello- {}", "SSL_set0_rbio");
+  // ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello - SSL_set0_rbio");
   SSL_set0_rbio(ssl_.get(), bssl::UpRef(bio).release());
 
-  ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello- {}", "SSL_do_handshake");
+  // SSL 상태 확인
+  ENVOY_LOG_MISC(debug, "[+]Filter::parseClientHello - SSL state before handshake: {}", 
+                 SSL_state_string_long(ssl_.get()));
+  
+  // // SSL 세션 정보 로깅
+  // SSL_SESSION* session = SSL_get_session(ssl_.get());
+  // if (session) {
+  //   // ENVOY_LOG_MISC(info, "[+]SSL Protocol: {}", SSL_SESSION_get_protocol_version(session));
+  //   // ENVOY_LOG_MISC(info, "[+]SSL Cipher: {}", SSL_SESSION_get_cipher(session));
+  // }
+
+  // ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello - SSL_do_handshake");
   int ret = SSL_do_handshake(ssl_.get());
 
   // This should never succeed because an error is always returned from the SNI callback.
@@ -194,6 +220,7 @@ ParseState Filter::parseClientHello(const void* data, size_t len,
   ParseState state = [this, ret]() {
     switch (SSL_get_error(ssl_.get(), ret)) {
     case SSL_ERROR_WANT_READ:
+      // ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello - SSL_ERROR_WANT_READ");
       if (read_ == maxConfigReadBytes()) {
         // We've hit the specified size limit. This is an unreasonably large ClientHello;
         // indicate failure.
@@ -206,7 +233,9 @@ ParseState Filter::parseClientHello(const void* data, size_t len,
       }
       return ParseState::Continue;
     case SSL_ERROR_SSL:
+      // ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello - SSL_ERROR_SSL");
       if (clienthello_success_) {
+        // ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello - CLIENT_HELLO_SUCCESS");
         config_->stats().tls_found_.inc();
         if (alpn_found_) {
           config_->stats().alpn_found_.inc();
@@ -215,13 +244,19 @@ ParseState Filter::parseClientHello(const void* data, size_t len,
         }
         cb_->socket().setDetectedTransportProtocol("tls");
       } else {
+        // ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello - TLS_NOT_FOUND");
         config_->stats().tls_not_found_.inc();
       }
       return ParseState::Done;
     default:
+      // ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello - Other Error");
       return ParseState::Error;
     }
   }();
+
+  // BIO 최종 상태 확인
+  bio_size = BIO_get_mem_data(bio.get(), nullptr);
+  // ENVOY_LOG_MISC(info, "[+]Filter::parseClientHello - Final BIO size: {}", bio_size);
 
   if (state != ParseState::Continue) {
     // Record bytes analyzed as we're done processing.

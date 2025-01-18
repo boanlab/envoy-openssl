@@ -8,6 +8,6 @@
  * https://www.openssl.org/docs/man3.0/man3/PKCS12_verify_mac.html
  */
 extern "C" int PKCS12_verify_mac(const PKCS12 *p12, const char *password, int password_len) {
-  bssl_compat_info("[+]SSL_METHOD::PKCS12_verify_mac");
+  // bssl_compat_info("[+]SSL_METHOD::PKCS12_verify_mac");
   return ossl.ossl_PKCS12_verify_mac(const_cast<PKCS12*>(p12), password, password_len);
 }

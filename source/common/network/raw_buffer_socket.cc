@@ -97,7 +97,7 @@ RawBufferSocketFactory::createTransportSocket(TransportSocketOptionsConstSharedP
 }
 
 TransportSocketPtr RawBufferSocketFactory::createDownstreamTransportSocket() const {
-  ENVOY_LOG_MISC(info, "[+]RawBufferSocketFactory - {}", "createDownstreamTransportSocket");
+  // // ENVOY_LOG_MISC(info, "[+]RawBufferSocketFactory - {}", "createDownstreamTransportSocket");
   return std::make_unique<RawBufferSocket>();
 }
 

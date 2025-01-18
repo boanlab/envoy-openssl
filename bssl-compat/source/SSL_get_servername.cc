@@ -43,7 +43,7 @@ static const unsigned char* extract_ext_str_value(const unsigned char *data, siz
  * all other cases we simply call the OpenSSL implementation.
  */
 const char *SSL_get_servername(const SSL *ssl, const int type) {
-    bssl_compat_info("[+]SSL_METHOD::SSL_get_servername");
+    // bssl_compat_info("[+]SSL_METHOD::SSL_get_servername");
   if (in_select_certificate_cb(ssl)) {
     // Allocate an ext data index for us to use, and plug in a free func
     static int index {SSL_get_ex_new_index(0, nullptr, nullptr, nullptr,
@@ -56,7 +56,7 @@ const char *SSL_get_servername(const SSL *ssl, const int type) {
 
     // Extract the bytes from the client hello SNI extension, if present.
     if (ossl_SSL_client_hello_get0_ext(const_cast<SSL*>(ssl), TLSEXT_TYPE_server_name, &p, &len)) {
-        bssl_compat_info("[+]SSL_METHOD::ossl_SSL_client_hello_get0_ext");
+        // bssl_compat_info("[+]SSL_METHOD::ossl_SSL_client_hello_get0_ext");
         if ((p = extract_ext_str_value(p, len, type)) != nullptr) {
         // The string pointed to by p is len bytes long but NOT null-terminated.
         // Therefore, we have to make a null-terminated copy of it for returning.

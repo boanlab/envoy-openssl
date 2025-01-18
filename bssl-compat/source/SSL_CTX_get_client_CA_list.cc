@@ -8,6 +8,6 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_get_client_CA_list.html
  */
 extern "C" STACK_OF(X509_NAME) *SSL_CTX_get_client_CA_list(const SSL_CTX *ctx) {
-  bssl_compat_info("[+]SSL_METHOD::SSL_CTX_get_client_CA_list");
+  // bssl_compat_info("[+]SSL_METHOD::SSL_CTX_get_client_CA_list");
   return reinterpret_cast<STACK_OF(X509_NAME)*>(ossl.ossl_SSL_CTX_get_client_CA_list(ctx));
 }

@@ -490,17 +490,17 @@ void ConnectionImpl::addBytesSentCallback(BytesSentCb cb) {
 }
 
 void ConnectionImpl::rawWrite(Buffer::Instance& data, bool end_stream) {
-  ENVOY_LOG_MISC(info, "[+]ConnectionImpl::rawWrite - end_stream");
+  // // ENVOY_LOG_MISC(info, "[+]ConnectionImpl::rawWrite - end_stream");
   write(data, end_stream, false);
 }
 
 void ConnectionImpl::write(Buffer::Instance& data, bool end_stream) {
-  ENVOY_LOG_MISC(info, "[+]ConnectionImpl::write - end_stream");
+  // // ENVOY_LOG_MISC(info, "[+]ConnectionImpl::write - end_stream");
   write(data, end_stream, true);
 }
 
 void ConnectionImpl::write(Buffer::Instance& data, bool end_stream, bool through_filter_chain) {
-  ENVOY_LOG_MISC(info, "[+]ConnectionImpl::write - end_stream + thorough_filter_chain");
+  // // ENVOY_LOG_MISC(info, "[+]ConnectionImpl::write - end_stream + thorough_filter_chain");
   ASSERT(!end_stream || enable_half_close_);
   ASSERT(dispatcher_.isThreadSafe());
 
@@ -549,7 +549,7 @@ void ConnectionImpl::write(Buffer::Instance& data, bool end_stream, bool through
 
 void ConnectionImpl::setBufferLimits(uint32_t limit) {
   read_buffer_limit_ = limit;
-  ENVOY_LOG_MISC(info, "[+]ConnectionImpl::setBufferLimits - {}", limit);
+  // ENVOY_LOG_MISC(info, "[+]ConnectionImpl::setBufferLimits - {}", limit);
 
   // Due to the fact that writes to the connection and flushing data from the connection are done
   // asynchronously, we have the option of either setting the watermarks aggressively, and regularly
@@ -654,6 +654,7 @@ void ConnectionImpl::onFileEvent(uint32_t events) {
 }
 
 void ConnectionImpl::onReadReady() {
+  // ENVOY_LOG_MISC(info, "[+]ConnectionImpl::onReadReady - start");
   ENVOY_CONN_LOG(trace, "read ready. dispatch_buffered_data={}", *this,
                  static_cast<int>(dispatch_buffered_data_));
   const bool latched_dispatch_buffered_data = dispatch_buffered_data_;

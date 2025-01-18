@@ -13,3 +13,4 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SHA256_Init \
   --uncomment-func-decl SHA256_Update \
   --uncomment-func-decl SHA256_Final \
+  

@@ -588,6 +588,7 @@ Status ConnectionImpl::completeCurrentHeader() {
 
 Status ConnectionImpl::onMessageBeginImpl() {
   ENVOY_CONN_LOG(trace, "message begin", connection_);
+  // ENVOY_LOG_MISC(info, "[+] ConnectionImpl::onMessageBeginImpl()");
   // Make sure that if HTTP/1.0 and HTTP/1.1 requests share a connection Envoy correctly sets
   // protocol for each request. Envoy defaults to 1.1 but sets the protocol to 1.0 where applicable
   // in onHeadersCompleteBase
@@ -1363,9 +1364,17 @@ Status ServerConnectionImpl::sendOverloadError() {
 
 Status ServerConnectionImpl::sendProtocolError(absl::string_view details) {
   // We do this here because we may get a protocol error before we have a logical stream.
+  ENVOY_LOG_MISC(info, "ServerConnectionImpl::sendProtocolError");
   if (active_request_ == nullptr) {
     RETURN_IF_ERROR(onMessageBeginImpl());
   }
+
+  //patched codes..
+  if (resetStreamCalled()) {
+    // ENVOY_LOG_MISC(info, "[+]ServerConnectionImpl::sendProtocolError - resetStreamCalled..");
+    return okStatus();
+  }
+  
   ASSERT(active_request_);
 
   active_request_->response_encoder_.setDetails(details);

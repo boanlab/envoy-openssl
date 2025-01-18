@@ -25,3 +25,4 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro-redef 'EVP_MAX_[A-Z0-9_]*_LENGTH' \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(EVP_CIPHER_CTX' \
   --uncomment-macro-redef 'CIPHER_R_[[:alnum:]_]*'
+  

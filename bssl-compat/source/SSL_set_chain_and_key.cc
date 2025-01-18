@@ -9,7 +9,7 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_use_cert_and_key.html
  */
 extern "C" int SSL_set_chain_and_key(SSL *ssl, CRYPTO_BUFFER *const *certs, size_t num_certs, EVP_PKEY *privkey, const SSL_PRIVATE_KEY_METHOD *privkey_method) {
-  bssl_compat_info("[+]SSL_METHOD::SSL_set_chain_and_key");
+  // bssl_compat_info("[+]SSL_METHOD::SSL_set_chain_and_key");
   if(privkey_method) {
     bssl_compat_fatal("%s() : privkey_method parameter is not supported");
   }

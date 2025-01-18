@@ -25,7 +25,7 @@ static const BIO_METHOD *BIO_s_socket_create(void) {
 }
 
 extern "C" const BIO_METHOD *BIO_s_socket() {
-  bssl_compat_info("[+]BIO_METHOD::BIO_s_socket");
+  // bssl_compat_info("[+]BIO_METHOD::BIO_s_socket");
   static const BIO_METHOD *result = BIO_s_socket_create();
   return result;
 }

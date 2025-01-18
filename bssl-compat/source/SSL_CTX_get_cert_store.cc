@@ -13,7 +13,7 @@
 // }
 
 extern "C" X509_STORE * SSL_CTX_get_cert_store(const SSL_CTX *ctx) {
-  bssl_compat_info("[+]SSL_METHOD::SSL_CTX_get_cert_store");
+  // bssl_compat_info("[+]SSL_METHOD::SSL_CTX_get_cert_store");
   // struct sigaction sa;
   // memset(&sa, 0, sizeof(struct sigaction));
   // sa.sa_sigaction = signal_handler;

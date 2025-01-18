@@ -36,6 +36,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_new_bio_pair \
   --uncomment-func-decl ERR_print_errors \
   --uncomment-func-decl BIO_ctrl \
+  --uncomment-func-decl BIO_ctrl_pending \
   --uncomment-func-decl BIO_ctrl_get_read_request \
   --uncomment-func-decl BIO_ctrl_get_write_guarantee \
   --uncomment-func-decl BIO_shutdown_wr \
@@ -54,4 +55,5 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro BIO_TYPE_MEM \
   --uncomment-macro BIO_TYPE_SOCKET \
   --uncomment-func-decl BIO_should_retry \
+
 

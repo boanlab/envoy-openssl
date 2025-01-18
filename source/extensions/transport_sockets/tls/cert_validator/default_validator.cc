@@ -58,74 +58,73 @@ int DefaultCertValidator::initializeSslContexts(std::vector<SSL_CTX*> contexts,
   int verify_mode_validation_context = SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
 
   if (config_ != nullptr) {
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "trustChainVerification()");
+    //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "trustChainVerification()");
     envoy::extensions::transport_sockets::tls::v3::CertificateValidationContext::
         TrustChainVerification verification = config_->trustChainVerification();
     if (verification == envoy::extensions::transport_sockets::tls::v3::
                             CertificateValidationContext::ACCEPT_UNTRUSTED) {
-      verify_mode = SSL_VERIFY_PEER; // Ensure client-certs will be requested even if we have
-                                     // nothing to verify against
+      verify_mode = SSL_VERIFY_PEER; // Ensure client-certs will be requested even if we have nothing to verify against
       verify_mode_validation_context = SSL_VERIFY_PEER;
     }
   }
 
   if (config_ != nullptr && !config_->caCert().empty() && !provides_certificates) {
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "caCertPath()");
+    //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "caCertPath()");
     ca_file_path_ = config_->caCertPath();
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "BIO_new_mem_buf");
-    bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(const_cast<char*>(config_->caCert().data()), config_->caCert().size()));
+    // ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - BIO_new_mem_buf");
+    bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(const_cast<char*>(config_->caCert().data()), config_->caCert().size()));    
     if(bio == nullptr)
-      ENVOY_LOG_MISC(info, "[-]DefaultCertValidator::initializeSslContexts - {}", "BIO_new_mem_buf exception!");
+      // ENVOY_LOG_MISC(info, "[-]DefaultCertValidator::initializeSslContexts - {}", "BIO_new_mem_buf exception!");
     RELEASE_ASSERT(bio != nullptr, "[-]DefaultCertValidator::initializeSslContexts - BIO_new_mem_buf Exception!");
 
     // Based on BoringSSL's X509_load_cert_crl_file().
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "PEM_X509_INFO_read_bio()");
+    //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "PEM_X509_INFO_read_bio()");
     bssl::UniquePtr<STACK_OF(X509_INFO)> list(PEM_X509_INFO_read_bio(bio.get(), nullptr, nullptr, nullptr));
     if (list == nullptr) {
-      ENVOY_LOG_MISC(info, "[-]DefaultCertValidator::initializeSslContexts - {}", "failed PEM_X509_INFO_read_bio()!");
+      // ENVOY_LOG_MISC(info, "[-]DefaultCertValidator::initializeSslContexts - failed PEM_X509_INFO_read_bio()!");
       throw EnvoyException(
           absl::StrCat("Failed to load trusted CA certificates from ", config_->caCertPath()));
     }
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - certPath: {}", config_->caCertPath().c_str());
+    //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - certPath: {}", config_->caCertPath().c_str());
 
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - Number of contexts: {}", contexts.size());
+    //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - Number of contexts: {}", contexts.size());
     for (auto& ctx : contexts) {
-      ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "SSL_CTX_get_cert_store()");
+      //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "SSL_CTX_get_cert_store()");
       X509_STORE* store = SSL_CTX_get_cert_store(ctx);
       
       if (Runtime::runtimeFeatureEnabled("envoy.reloadable_features.enable_intermediate_ca")) {
-        ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_set_flags()");
+        //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_set_flags()");
         X509_STORE_set_flags(store, X509_V_FLAG_PARTIAL_CHAIN);
       }
 
       bool has_crl = false;
       for (const X509_INFO* item : list.get()) {
         if (item->x509) {
-          ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_add_cert()");
-          int aa = X509_STORE_add_cert(store, item->x509);
-          ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - X509_STORE_add_cert() result: {}", aa);
+          if(X509_STORE_add_cert(store, item->x509)) {
+            // ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - X509_STORE_add_cert() success");
+          }
           if (ca_cert_ == nullptr) {
-            ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_up_ref()");
+            //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_up_ref()");
             X509_up_ref(item->x509);
-            ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "ca_cert_.reset()");
+            //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "ca_cert_.reset()");
             ca_cert_.reset(item->x509);
           }
         }
         if (item->crl) {
-          ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_add_crl()");
+          //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_add_crl()");
           X509_STORE_add_crl(store, item->crl);
           has_crl = true;
         }
       }
 
       if (ca_cert_ == nullptr) {
-        ENVOY_LOG_MISC(info, "[-]DefaultCertValidator::initializeSslContexts - {}", "ca_cert_ == nullptr");
+        // ENVOY_LOG_MISC(info, "[-]DefaultCertValidator::initializeSslContexts - {}", "ca_cert_ == nullptr");
         throw EnvoyException(
             absl::StrCat("Failed to load trusted CA certificates from ", config_->caCertPath()));
       }
 
       if (has_crl) {
-        ENVOY_LOG_MISC(info, "[-]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_set_flags()-2");
+        //// ENVOY_LOG_MISC(info, "[-]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_set_flags()-2");
         X509_STORE_set_flags(store, config_->onlyVerifyLeafCertificateCrl()
                                         ? X509_V_FLAG_CRL_CHECK
                                         : X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
@@ -133,25 +132,25 @@ int DefaultCertValidator::initializeSslContexts(std::vector<SSL_CTX*> contexts,
       verify_mode = SSL_VERIFY_PEER;
       verify_trusted_ca_ = true;
 
-      ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "config_->allowExpiredCertificate()");
+      //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "config_->allowExpiredCertificate()");
       if (config_->allowExpiredCertificate()) {
-        ENVOY_LOG_MISC(info, "[-]DefaultCertValidator::initializeSslContexts - {}", "CertValidatorUtil::setIgnoreCertificateExpiration()");
+        // ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - setIgnoreCertificateExpiration()");
         CertValidatorUtil::setIgnoreCertificateExpiration(store);
       } else {
-        ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "config_->allowExpiredCertificate() - nextstep");
+        // ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - config_->allowExpiredCertificate()");
       }
-      ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "next loop!\n");
+      //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "next loop!\n");
     }
   }
 
-  ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "certificateRevocationList().empty()");
+  //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "certificateRevocationList().empty()");
   if (config_ != nullptr && !config_->certificateRevocationList().empty()) {
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "BIO_new_mem_buf()-2");
+    //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "BIO_new_mem_buf()-2");
     bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(const_cast<char*>(config_->certificateRevocationList().data()), config_->certificateRevocationList().size()));
     RELEASE_ASSERT(bio != nullptr, "");
 
     // Based on BoringSSL's X509_load_cert_crl_file().
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "PEM_X509_INFO_read_bio()-2");
+    //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "PEM_X509_INFO_read_bio()-2");
     bssl::UniquePtr<STACK_OF(X509_INFO)> list(PEM_X509_INFO_read_bio(bio.get(), nullptr, nullptr, nullptr));
     if (list == nullptr) {
       throw EnvoyException(
@@ -159,10 +158,10 @@ int DefaultCertValidator::initializeSslContexts(std::vector<SSL_CTX*> contexts,
     }
 
     for (auto& ctx : contexts) {
-      ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "SSL_CTX_get_cert_store()-2");
+      //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "SSL_CTX_get_cert_store()-2");
       X509_STORE* store = SSL_CTX_get_cert_store(ctx);
       if (Runtime::runtimeFeatureEnabled("envoy.reloadable_features.enable_intermediate_ca")) {
-        ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_set_flags()-2");
+        //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_set_flags()-2");
         X509_STORE_set_flags(store, X509_V_FLAG_PARTIAL_CHAIN);
       }
       for (const X509_INFO* item : list.get()) {
@@ -170,7 +169,7 @@ int DefaultCertValidator::initializeSslContexts(std::vector<SSL_CTX*> contexts,
           X509_STORE_add_crl(store, item->crl);
         }
       }
-      ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_set_flags()-2");
+      //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "X509_STORE_set_flags()-2");
       X509_STORE_set_flags(store, config_->onlyVerifyLeafCertificateCrl()
                                       ? X509_V_FLAG_CRL_CHECK
                                       : X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
@@ -179,9 +178,9 @@ int DefaultCertValidator::initializeSslContexts(std::vector<SSL_CTX*> contexts,
 
   const Envoy::Ssl::CertificateValidationContextConfig* cert_validation_config = config_;
   if (cert_validation_config != nullptr) {
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "subjectAltNameMatchers().empty()");
+    //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "subjectAltNameMatchers().empty()");
     if (!cert_validation_config->subjectAltNameMatchers().empty()) {
-      ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "cert_validation_config->subjectAltNameMatchers()");
+      //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "cert_validation_config->subjectAltNameMatchers()");
       for (const envoy::extensions::transport_sockets::tls::v3::SubjectAltNameMatcher& matcher : cert_validation_config->subjectAltNameMatchers()) {
         auto san_matcher = createStringSanMatcher(matcher);
         if (san_matcher == nullptr) {
@@ -193,14 +192,14 @@ int DefaultCertValidator::initializeSslContexts(std::vector<SSL_CTX*> contexts,
       verify_mode = verify_mode_validation_context;
     }
 
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "verifyCertificateHashList().empty()");
+    //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "verifyCertificateHashList().empty()");
     if (!cert_validation_config->verifyCertificateHashList().empty()) {
-      ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "cert_validation_config->verifyCertificateHashList()");
+      //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "cert_validation_config->verifyCertificateHashList()");
       for (auto hash : cert_validation_config->verifyCertificateHashList()) {
         // Remove colons from the 95 chars long colon-separated "fingerprint"
         // in order to get the hex-encoded string.
         if (hash.size() == 95) {
-          ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "hash.erase()");
+          //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "hash.erase()");
           hash.erase(std::remove(hash.begin(), hash.end(), ':'), hash.end());
         }
         const auto& decoded = Hex::decode(hash);
@@ -212,7 +211,7 @@ int DefaultCertValidator::initializeSslContexts(std::vector<SSL_CTX*> contexts,
       verify_mode = verify_mode_validation_context;
     }
 
-    ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "verifyCertificateSpkiList().empty()");
+    //// ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::initializeSslContexts - {}", "verifyCertificateSpkiList().empty()");
     if (!cert_validation_config->verifyCertificateSpkiList().empty()) {
       for (const auto& hash : cert_validation_config->verifyCertificateSpkiList()) {
         const auto decoded = Base64::decode(hash);
@@ -318,6 +317,7 @@ ValidationResults DefaultCertValidator::doVerifyCertChain(
     const Network::TransportSocketOptionsConstSharedPtr& transport_socket_options, SSL_CTX& ssl_ctx,
     const CertValidator::ExtraValidationContext& /*validation_context*/, bool is_server,
     absl::string_view /*host_name*/) {
+  // ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::doVerifyCertChain");
   if (sk_X509_num(&cert_chain) == 0) {
     stats_.fail_verify_error_.inc();
     const char* error = "verify cert failed: empty cert chain";
@@ -351,8 +351,8 @@ ValidationResults DefaultCertValidator::doVerifyCertChain(
     const bool verify_succeeded = (X509_verify_cert(ctx.get()) == 1);
 
     if (!verify_succeeded) {
-      const std::string error =
-          absl::StrCat("verify cert failed: ", Utility::getX509VerificationErrorInfo(ctx.get()));
+      // ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::doVerifyCertChain - X509_verify_cert failed");
+      const std::string error = absl::StrCat("verify cert failed: ", Utility::getX509VerificationErrorInfo(ctx.get()));
       stats_.fail_verify_error_.inc();
       ENVOY_LOG(debug, error);
       if (allow_untrusted_certificate_) {
@@ -525,10 +525,11 @@ void DefaultCertValidator::addClientValidationContext(SSL_CTX* ctx, bool require
   // Based on BoringSSL's SSL_add_file_cert_subjects_to_stack().
   // Use a generic lambda to be compatible with BoringSSL before and after
   // https://boringssl-review.googlesource.com/c/boringssl/+/56190
-  bssl::UniquePtr<STACK_OF(X509_NAME)> list(
-      sk_X509_NAME_new([](auto* a, auto* b) -> int { return X509_NAME_cmp(*a, *b); }));
+  
+  bssl::UniquePtr<STACK_OF(X509_NAME)> list(sk_X509_NAME_new([](auto* a, auto* b) -> int { return X509_NAME_cmp(*a, *b); }));
   RELEASE_ASSERT(list != nullptr, "");
   for (;;) {
+    // ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::addClientValidationContext - PEM_read_bio_X509");
     bssl::UniquePtr<X509> cert(PEM_read_bio_X509(bio.get(), nullptr, nullptr, nullptr));
     if (cert == nullptr) {
       break;
@@ -552,6 +553,7 @@ void DefaultCertValidator::addClientValidationContext(SSL_CTX* ctx, bool require
   // Check for EOF.
   const uint32_t err = ERR_peek_last_error();
   if (ERR_GET_LIB(err) == ERR_LIB_PEM && ERR_GET_REASON(err) == PEM_R_NO_START_LINE) {
+    // ENVOY_LOG_MISC(info, "[+]DefaultCertValidator::addClientValidationContext - End of Certificate");
     ERR_clear_error();
   } else {
     throw EnvoyException(

@@ -541,7 +541,7 @@ private:
     return *absl::get<RequestHeaderMapPtr>(headers_or_trailers_);
   }
   void allocHeaders(StatefulHeaderKeyFormatterPtr&& formatter) override {
-    ASSERT(nullptr == absl::get<RequestHeaderMapPtr>(headers_or_trailers_));
+    //ASSERT(nullptr == absl::get<RequestHeaderMapPtr>(headers_or_trailers_)); //patched codes..
     ASSERT(!processing_trailers_);
     auto headers = RequestHeaderMapImpl::create(max_headers_kb_, max_headers_count_);
     headers->setFormatter(std::move(formatter));

@@ -5,7 +5,7 @@ if(OpenSSL_FOUND)
     get_filename_component(OPENSSL_LIBRARY_DIR ${OPENSSL_CRYPTO_LIBRARY} DIRECTORY)
     message(STATUS "Found OpenSSL ${OPENSSL_VERSION} (${OPENSSL_LIBRARY_DIR})")
 else()
-    message(STATUS "Building OpenSSL with OQS provider")
+    message(STATUS "Building OpenSSL (${OPENSSL_URL})")
     include(ExternalProject)
     
     # Setup OpenSSL

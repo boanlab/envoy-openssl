@@ -34,7 +34,7 @@ Network::TransportSocketPtr StartTlsSocketFactory::createTransportSocket(
 
 Network::TransportSocketPtr
 StartTlsDownstreamSocketFactory::createDownstreamTransportSocket() const {
-  ENVOY_LOG_MISC(info, "[+]StartTlsDownstreamSocketFactory - {}", "createDownstreamTransportSocket");
+  // ENVOY_LOG_MISC(info, "[+]StartTlsDownstreamSocketFactory - {}", "createDownstreamTransportSocket");
   return std::make_unique<StartTlsSocket>(raw_socket_factory_->createDownstreamTransportSocket(),
                                           tls_socket_factory_->createDownstreamTransportSocket(),
                                           nullptr);

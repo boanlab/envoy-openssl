@@ -71,6 +71,7 @@ bool requestWasConnect(const RequestHeaderMapSharedPtr& headers, Protocol protoc
     return false;
   }
   if (protocol <= Protocol::Http11) {
+    // ENVOY_LOG_MISC(info, "[+]requestWasConnect()");
     return HeaderUtility::isConnect(*headers);
   }
   // All HTTP/2 style upgrades were originally connect requests.
@@ -1741,6 +1742,7 @@ void ConnectionManagerImpl::ActiveStream::encodeHeaders(ResponseHeaderMap& heade
     connection_manager_.config_.dateProvider().setDateHeader(headers);
   }
 
+  // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 1");
   // Following setReference() is safe because serverName() is constant for the life of the
   // listener.
   const auto transformation = connection_manager_.config_.serverHeaderTransformation();
@@ -1749,6 +1751,7 @@ void ConnectionManagerImpl::ActiveStream::encodeHeaders(ResponseHeaderMap& heade
        headers.Server() == nullptr)) {
     headers.setReferenceServer(connection_manager_.config_.serverName());
   }
+  // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 2");
   ConnectionManagerUtility::mutateResponseHeaders(
       headers, request_headers_.get(), connection_manager_.config_,
       connection_manager_.config_.via(), filter_manager_.streamInfo(),
@@ -1758,6 +1761,7 @@ void ConnectionManagerImpl::ActiveStream::encodeHeaders(ResponseHeaderMap& heade
   if (connection_manager_.drain_state_ == DrainState::NotDraining &&
       connection_manager_.random_generator_.bernoulli(
           connection_manager_.overload_disable_keepalive_ref_.value())) {
+    // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 3");
     ENVOY_STREAM_LOG(debug, "disabling keepalive due to envoy overload", *this);
     drain_connection_due_to_overload = true;
     connection_manager_.stats_.named_.downstream_cx_overload_disable_keepalive_.inc();
@@ -1767,7 +1771,7 @@ void ConnectionManagerImpl::ActiveStream::encodeHeaders(ResponseHeaderMap& heade
   // header block.
   if (connection_manager_.drain_state_ == DrainState::NotDraining &&
       (connection_manager_.drain_close_.drainClose() || drain_connection_due_to_overload)) {
-
+    // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 4");
     // This doesn't really do anything for HTTP/1.1 other then give the connection another boost
     // of time to race with incoming requests. For HTTP/2 connections, send a GOAWAY frame to
     // prevent any new streams.
@@ -1777,6 +1781,7 @@ void ConnectionManagerImpl::ActiveStream::encodeHeaders(ResponseHeaderMap& heade
   }
 
   if (connection_manager_.codec_->protocol() == Protocol::Http10) {
+    // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 5");
     // As HTTP/1.0 and below can not do chunked encoding, if there is no content
     // length the response will be framed by connection close.
     if (!headers.ContentLength()) {
@@ -1791,6 +1796,7 @@ void ConnectionManagerImpl::ActiveStream::encodeHeaders(ResponseHeaderMap& heade
 
   if (connection_manager_.drain_state_ == DrainState::NotDraining &&
       filter_manager_.streamInfo().shouldDrainConnectionUponCompletion()) {
+    // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 6");
     ENVOY_STREAM_LOG(debug, "closing connection due to connection close header", *this);
     connection_manager_.drain_state_ = DrainState::Closing;
   }
@@ -1799,7 +1805,9 @@ void ConnectionManagerImpl::ActiveStream::encodeHeaders(ResponseHeaderMap& heade
   // multiplexing, we should disconnect since we don't want to wait around for the request to
   // finish.
   if (!filter_manager_.remoteDecodeComplete()) {
+    // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 6");
     if (connection_manager_.codec_->protocol() < Protocol::Http2) {
+      // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 7");
       connection_manager_.drain_state_ = DrainState::Closing;
     }
 
@@ -1808,6 +1816,7 @@ void ConnectionManagerImpl::ActiveStream::encodeHeaders(ResponseHeaderMap& heade
 
   if (Utility::isUpgrade(headers) ||
       HeaderUtility::isConnectResponse(request_headers_.get(), *responseHeaders())) {
+    // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 8");
     state_.is_tunneling_ = true;
   }
 
@@ -1815,20 +1824,24 @@ void ConnectionManagerImpl::ActiveStream::encodeHeaders(ResponseHeaderMap& heade
           "envoy.reloadable_features.prohibit_route_refresh_after_response_headers_sent")) {
     // Block route cache if the response headers is received and processed. Because after this
     // point, the cached route should never be updated or refreshed.
+    // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 9");
     blockRouteCache();
   }
 
   if (connection_manager_.drain_state_ != DrainState::NotDraining &&
       connection_manager_.codec_->protocol() < Protocol::Http2) {
+    // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 10");
     // If the connection manager is draining send "Connection: Close" on HTTP/1.1 connections.
     // Do not do this for H2 (which drains via GOAWAY) or Upgrade or CONNECT (as the
     // payload is no longer HTTP/1.1)
     if (!state_.is_tunneling_) {
+      // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 11");
       headers.setReferenceConnection(Headers::get().ConnectionValues.Close);
     }
   }
 
   if (connection_manager_tracing_config_.has_value()) {
+    // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - 12");
     if (connection_manager_tracing_config_->operation_name_ == Tracing::OperationName::Ingress) {
       // For ingress (inbound) responses, if the request headers do not include a
       // decorator operation (override), and the decorated operation should be
@@ -1871,6 +1884,7 @@ void ConnectionManagerImpl::ActiveStream::encodeHeaders(ResponseHeaderMap& heade
       // It is possible that the header map is invalid if an encoder filter makes invalid
       // modifications
       // TODO(yanavlasov): add handling for this case.
+      // ENVOY_LOG_MISC(info, "[+]ConnectionManagerImpl::ActiveStream::encodeHeaders - call");
     } else if (result.new_headers) {
       response_encoder_->encodeHeaders(*result.new_headers, end_stream);
       return;

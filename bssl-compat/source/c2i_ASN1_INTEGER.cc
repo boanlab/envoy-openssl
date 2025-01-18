@@ -2,9 +2,11 @@
 #include <openssl/bytestring.h>
 #include <openssl/crypto.h>
 #include <ossl.h>
+#include "log.h"
 
 
 extern "C" ASN1_INTEGER *c2i_ASN1_INTEGER(ASN1_INTEGER **out, const unsigned char **inp, long len) {
+  // bssl_compat_info("[+]ASN_METHODS::c2i_ASN1_INTEGER");
   ASN1_INTEGER *result = NULL;
   CBB cbb;
 

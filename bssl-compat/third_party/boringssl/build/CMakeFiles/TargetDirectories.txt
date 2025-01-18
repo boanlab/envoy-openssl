@@ -1,5 +1,0 @@
-/envoy-openssl/bssl-compat/third_party/boringssl/build/CMakeFiles/crypto.dir
-/envoy-openssl/bssl-compat/third_party/boringssl/build/CMakeFiles/ssl.dir
-/envoy-openssl/bssl-compat/third_party/boringssl/build/CMakeFiles/bssl.dir
-/envoy-openssl/bssl-compat/third_party/boringssl/build/CMakeFiles/edit_cache.dir
-/envoy-openssl/bssl-compat/third_party/boringssl/build/CMakeFiles/rebuild_cache.dir

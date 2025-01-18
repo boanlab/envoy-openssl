@@ -45,16 +45,15 @@ add_dependencies(bssl-gen ossl-gen) # generate ossl headers before bssl headers
 
 # custom mappings
 add_library(bssl-compat SHARED
-  # source/SSL_CTX_set_reverify_on_resume.cc # Added for compatibility!
-  # source/SSL_set_enforce_rsa_key_usage.cc # Added for compatibility!
-  # source/EVP_DigestInit.cc # Added for compatibility!
-  # source/SSL_CTX_get_cert_store.cc # Added for compatibility!
-  source/AES.cc
+  # source/SSL_CTX_set_reverify_on_resume.cc 
+  # source/SSL_set_enforce_rsa_key_usage.cc 
+  # source/EVP_DigestInit.cc 
+  # source/SSL_CTX_get_cert_store.cc 
+  source/stacktrace.cc
   source/EVP_MD_CTX_init.cc # Added for compatibility!
   source/EVP_MD_CTX_cleanup.cc # Added for compatibility!
-  source/BN_init.cc # Added for compatibility!
-  source/BN_num_bytes.cc # Added for compatibility!
-  source/BN_bn2le_padded.cc # Added for compatibility!
+  # source/BN_init.cc # Added for compatibility!
+  source/SSL_do_handshake.cc
   source/ASN1_TIME_free.cc
   source/BASIC_CONSTRAINTS_free.cc
   source/BASIC_CONSTRAINTS_new.cc
@@ -66,6 +65,7 @@ add_library(bssl-compat SHARED
   source/BIO_pending.cc
   source/BIO_printf.cc
   source/BIO_read_asn1.c
+  source/BIO_f_buffer.cc # Added for compatibility!
   source/BIO_s_mem.cc
   source/BIO_s_socket.cc
   source/BIO_snprintf.cc
@@ -73,7 +73,6 @@ add_library(bssl-compat SHARED
   source/BN_cmp_word.cc
   source/BN_bn2hex.cc
   source/BN_bin2bn.cc
-  source/BN_bn2bin.cc
   source/c2i_ASN1_INTEGER.cc
   source/CRYPTO_BUFFER_free.c
   source/CRYPTO_BUFFER.h
@@ -112,10 +111,6 @@ add_library(bssl-compat SHARED
   source/internal.h
   source/log.c
   source/log.h
-  source/MD5_Init.cc
-  source/MD5_Transform.cc
-  source/MD5_Update.cc
-  source/MD5_Final.cc
   source/NAME_CONSTRAINTS_free.cc
   source/NAME_CONSTRAINTS_new.cc
   source/ossl.c
@@ -128,7 +123,7 @@ add_library(bssl-compat SHARED
   source/PEM_read_bio_X509_CRL.cc
   source/PEM_read_bio_PUBKEY.cc
   source/PEM_write_bio_X509.cc
-  source/PEM_X509_INFO_read_bio.cc # Added for compatibility!
+  source/PEM_X509_INFO_read_bio.cc
   source/PKCS12_get_key_and_certs.cc
   source/PKCS12_parse.cc
   source/PKCS12_verify_mac.cc
@@ -140,12 +135,7 @@ add_library(bssl-compat SHARED
   source/RSA_private_key_from_bytes.cc
   source/RSA_public_key_from_bytes.cc
   source/RSA_sign_pss_mgf1.cc
-  source/RSA_add_pkcs1_prefix.cc # Added for compatibility!
-  source/SHA1.cc
-  source/SHA224.cc
   source/SHA256.cc
-  source/SHA384.cc
-  source/SHA512.cc
   source/SSL_add_file_cert_subjects_to_stack.cc
   source/SSL_CIPHER_get_kx_nid.cc
   source/SSL_CIPHER_get_min_version.cc
@@ -160,7 +150,7 @@ add_library(bssl-compat SHARED
   source/SSL_CTX_sess_set_new_cb.cc
   source/SSL_CTX_set_alpn_select_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
-  source/SSL_CTX_set_ciphersuites.cc # Added for compatibility!
+  source/SSL_CTX_set_ciphersuites.cc
   source/SSL_CTX_set_client_CA_list.cc
   source/SSL_CTX_set_custom_verify.cc
   source/SSL_CTX_set_next_protos_advertised_cb.cc
@@ -198,7 +188,6 @@ add_library(bssl-compat SHARED
   source/SSL_get_signature_algorithm_key_type.cc
   source/SSL_get_signature_algorithm_name.c
   source/SSL_is_signature_algorithm_rsa_pss.cc
-  # source/SSL_new.cc  
   source/SSL_send_fatal_alert.cc
   source/SSL_SESSION_from_bytes.c
   source/SSL_SESSION_get_ticket_lifetime_hint.cc
@@ -225,7 +214,6 @@ add_library(bssl-compat SHARED
   source/X509_STORE_CTX_set0_trusted_stack.cc
   source/X509_STORE_CTX_set_verify_cb.cc
   source/X509_verify_cert_error_string.cc
-  source/X509_VERIFY_PARAM_set_time.cc
   source/X509_VERIFY_PARAM_set_time_posix.cc
 )
 
@@ -350,6 +338,9 @@ target_add_bssl_function(bssl-compat
   BIO_read
   BIO_reset
   BIO_get_mem_data
+  # BIO_s_mem # Added for debug!
+  # BIO_s_socket # Added for debug!
+  BIO_ctrl_pending # Added for debug!
   BIO_set_data
   BIO_set_init
   BIO_set_mem_eof_return
@@ -366,11 +357,10 @@ target_add_bssl_function(bssl-compat
   BN_add_word
   BN_add_word
   BN_add_word
-  BN_is_word
   BN_dup
   BN_free
   BN_hex2bn
-  # BN_init # Commented for compatibility!
+  # BN_init
   BN_new
   BN_num_bits
   BN_set_word
@@ -409,7 +399,7 @@ target_add_bssl_function(bssl-compat
   EVP_DecryptUpdate
   EVP_DigestFinal
   EVP_DigestFinal_ex
-  EVP_DigestInit # Commented for compatibility!
+  EVP_DigestInit
   EVP_DigestInit_ex
   EVP_DigestSignInit
   EVP_DigestSignUpdate
@@ -461,8 +451,6 @@ target_add_bssl_function(bssl-compat
   OPENSSL_realloc
   OPENSSL_init_ssl
   PEM_bytes_read_bio
-  # PEM_read_bio # Added for compatibility!
-  # PEM_X509_INFO_read_bio # Added for compatibility!
   PKCS12_free
   RSA_bits
   RSA_check_key
@@ -477,8 +465,6 @@ target_add_bssl_function(bssl-compat
   RSA_sign
   RSA_size
   RSA_verify
-  # RSA_add_pkcs1_prefix  # Added for compatibility!
-  RSA_padding_add_PKCS1_PSS_mgf1  # Added for compatibility!
   SHA1
   SHA224
   SHA256
@@ -499,7 +485,7 @@ target_add_bssl_function(bssl-compat
   SSL_CTX_set_tmp_ecdh
   SSL_get0_next_proto_negotiated
   SSL_CTX_free
-  SSL_CTX_get_cert_store # Added for compatibility!
+  SSL_CTX_get_cert_store
   SSL_CTX_set_cert_store
   SSL_CTX_get_ex_data
   SSL_CTX_get_options
@@ -508,8 +494,6 @@ target_add_bssl_function(bssl-compat
   SSL_CTX_get0_param
   SSL_CTX_load_verify_locations
   SSL_CTX_new
-  # SSL_CTX_set_reverify_on_resume # Added for compatibility!
-  # SSL_set_enforce_rsa_key_usage # Added for compatibility!
   SSL_CTX_set_alpn_protos
   SSL_CTX_set_cipher_list
   SSL_CTX_set_ex_data
@@ -525,8 +509,10 @@ target_add_bssl_function(bssl-compat
   SSL_CTX_use_certificate_chain_file
   SSL_CTX_use_certificate_file
   SSL_CTX_use_PrivateKey_file
-  SSL_do_handshake
+  # SSL_do_handshake
   SSL_free
+  # SSL_get_cipher_list # Added for compatibility!
+  # SSL_get_verify_mode # Added for compatibility!
   SSL_get_certificate
   SSL_get_current_cipher
   SSL_get_error
@@ -584,6 +570,8 @@ target_add_bssl_function(bssl-compat
   X509_CRL_get_issuer
   X509_CRL_free
   X509_CRL_up_ref
+  X509_dup # Added for debug!
+  X509_PKEY_free # Added for debug!
   X509_digest
   X509_free
   X509_get_ext
@@ -619,7 +607,6 @@ target_add_bssl_function(bssl-compat
   X509_PUBKEY_get
   X509_set_pubkey
   X509_set_version
-  # x509_store_add # Added for compatibility!
   X509_STORE_add_cert
   X509_STORE_add_crl
   X509_STORE_CTX_free
@@ -668,18 +655,16 @@ target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/source)
-target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
-# target_link_libraries(bssl-compat PRIVATE ${CMAKE_DL_LIBS} dl)
-# set_target_properties(bssl-compat PROPERTIES
-#     POSITION_INDEPENDENT_CODE ON
-#     LINK_FLAGS "-Wl,-rpath,${OPENSSL_LIBRARY_DIR}"
-# )
+# target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
+set_target_properties(bssl-compat PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(bssl-compat PRIVATE ${CMAKE_DL_LIBS})
 
 ################################################################################
 # Intallation
 ################################################################################
 
 set(INSTALL_GTEST OFF)
+# install(TARGETS bssl-compat ARCHIVE DESTINATION lib)
 install(TARGETS bssl-compat LIBRARY DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION . FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ossl DESTINATION include FILES_MATCHING PATTERN "*.h")

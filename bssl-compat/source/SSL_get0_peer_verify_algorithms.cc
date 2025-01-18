@@ -37,7 +37,7 @@ static const int exindex = ossl_CRYPTO_get_ex_new_index(ossl_CRYPTO_EX_INDEX_SSL
 // it either gets deleted in this function when replacing it with a new value,
 // or when the SSL object gets freed, via the freefunc callback.
 OPENSSL_EXPORT size_t SSL_get0_peer_verify_algorithms(const SSL *ssl, const uint16_t **out_sigalgs) {
-  bssl_compat_info("[+]SSL_METHODS::SSL_get0_peer_verify_algorithms - init");
+  // bssl_compat_info("[+]SSL_METHODS::SSL_get0_peer_verify_algorithms - init");
 
   // Delete the previous sigalgs array if there is one from a previous call
   uint16_t *oldsigalgs = static_cast<uint16_t*>(ossl_SSL_get_ex_data(const_cast<SSL*>(ssl), exindex));
@@ -55,7 +55,7 @@ OPENSSL_EXPORT size_t SSL_get0_peer_verify_algorithms(const SSL *ssl, const uint
   uint16_t *sigalgs = new uint16_t[nsigalgs];
 
   // Put the array into the SSL's exdata so it won't leak
-  bssl_compat_info("[+]SSL_METHODS::SSL_get0_peer_verify_algorithms - ossl_SSL_set_ex_data");
+  // bssl_compat_info("[+]SSL_METHODS::SSL_get0_peer_verify_algorithms - ossl_SSL_set_ex_data");
   if(ossl_SSL_set_ex_data(const_cast<SSL*>(ssl), exindex, sigalgs) == 0) {
     delete[] sigalgs;
     return 0;

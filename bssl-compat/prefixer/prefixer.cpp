@@ -628,7 +628,7 @@ void MyFrontendAction::EndSourceFileAction() {
          << "}" << std::endl
          << std::endl
          << "void ssl_init(void) {" << std::endl                                                                                     //ssl_init function
-         << "  const char* ssl_impl = get_ssl_implementation();" << std::endl
+        //  << "  const char* ssl_impl = get_ssl_implementation();" << std::endl
          << std::endl
          << "  struct sigaction sa;" << std::endl
          << "  memset(&sa, 0, sizeof(struct sigaction));" << std::endl
@@ -637,29 +637,29 @@ void MyFrontendAction::EndSourceFileAction() {
          << "  sigaction(SIGSEGV, &sa, NULL);  // SIGSEGV Handler" << std::endl
          << "  sigaction(SIGABRT, &sa, NULL);  // SIGABRT Handler" << std::endl
          << std::endl
-         << "if (!ssl_impl || strncmp(ssl_impl, BSSL_IMPL, 4) == 0) {"                                                               //boringssl routine
-         << "    //Constructor fuction for BoringSSL" << std::endl
-         << "    if((libcrypto = dlopen(B_LIBCRYPTO_SO, RTLD_NOW | RTLD_GLOBAL)) == NULL) {" << std::endl
-         << "      fprintf(stderr, \"dlopen(%s) : %s\\n\", B_LIBCRYPTO_SO, dlerror());" << std::endl
-         << "      exit(ELIBACC);" << std::endl
-         << "    } else {" << std::endl
-         << "      dlinfo(libcrypto, RTLD_DI_LINKMAP, &map);" << std::endl
-         << "      fprintf(stderr, \"library path: %s\\n\", map->l_name);" << std::endl
-         << "    }" << std::endl
-         << std::endl
-         << "    if((libssl = dlopen(B_LIBSSL_SO, RTLD_NOW | RTLD_GLOBAL)) == NULL) {" << std::endl
-         << "      fprintf(stderr, \"dlopen(%s) : %s\\n\", B_LIBSSL_SO, dlerror());" << std::endl
-         << "      exit(ELIBACC);" << std::endl
-         << "    } else {" << std::endl
-         << "      dlinfo(libssl, RTLD_DI_LINKMAP, &map);" << std::endl
-         << "      fprintf(stderr, \"library path: %s\\n\", map->l_name);" << std::endl
-         << "    }" << std::endl
-         << "    print_memory_maps();" << std::endl
-         << "    fprintf(stderr, \"Testing essential BoringSSL functions...\\n\");" << std::endl
-         << std::endl
-         << "  } else if (!ssl_impl || strncmp(ssl_impl, OSSL_IMPL, 4) == 0) {"                                                        //openssl routine
+        //  << "if (!ssl_impl || strncmp(ssl_impl, BSSL_IMPL, 4) == 0) {"                                                               //boringssl routine
+        //  << "    //Constructor fuction for BoringSSL" << std::endl
+        //  << "    if((libcrypto = dlopen(B_LIBCRYPTO_SO, RTLD_NOW | RTLD_GLOBAL)) == NULL) {" << std::endl
+        //  << "      fprintf(stderr, \"dlopen(%s) : %s\\n\", B_LIBCRYPTO_SO, dlerror());" << std::endl
+        //  << "      exit(ELIBACC);" << std::endl
+        //  << "    } else {" << std::endl
+        //  << "      dlinfo(libcrypto, RTLD_DI_LINKMAP, &map);" << std::endl
+        //  << "      fprintf(stderr, \"library path: %s\\n\", map->l_name);" << std::endl
+        //  << "    }" << std::endl
+        //  << std::endl
+        //  << "    if((libssl = dlopen(B_LIBSSL_SO, RTLD_NOW | RTLD_GLOBAL)) == NULL) {" << std::endl
+        //  << "      fprintf(stderr, \"dlopen(%s) : %s\\n\", B_LIBSSL_SO, dlerror());" << std::endl
+        //  << "      exit(ELIBACC);" << std::endl
+        //  << "    } else {" << std::endl
+        //  << "      dlinfo(libssl, RTLD_DI_LINKMAP, &map);" << std::endl
+        //  << "      fprintf(stderr, \"library path: %s\\n\", map->l_name);" << std::endl
+        //  << "    }" << std::endl
+        //  << "    print_memory_maps();" << std::endl
+        //  << "    fprintf(stderr, \"Testing essential BoringSSL functions...\\n\");" << std::endl
+        //  << std::endl
+        //  << "  } else if (!ssl_impl || strncmp(ssl_impl, OSSL_IMPL, 4) == 0) {"                                                        //openssl routine
          << "    //Constructor fuction for OpenSSL" << std::endl
-         << "    if((libcrypto = dlopen(LIBCRYPTO_SO, RTLD_NOW | RTLD_LOCAL)) == NULL) {" << std::endl
+         << "    if((libcrypto = dlopen(\"/usr/local/openssl-3.2.0/lib64/libcrypto.so\", RTLD_NOW | RTLD_LOCAL)) == NULL) {" << std::endl
          << "      fprintf(stderr, \"dlopen(%s) : %s\\n\", LIBCRYPTO_SO, dlerror());" << std::endl
          << "      exit(ELIBACC);" << std::endl
          << "    } else {" << std::endl
@@ -667,7 +667,7 @@ void MyFrontendAction::EndSourceFileAction() {
          << "      fprintf(stderr, \"library path: %s\\n\", map->l_name);" << std::endl
          << "    }" << std::endl
          << std::endl
-         << "    if((libssl = dlopen(LIBSSL_SO, RTLD_NOW | RTLD_LOCAL)) == NULL) {" << std::endl
+         << "    if((libssl = dlopen(\"/usr/local/openssl-3.2.0/lib64/libssl.so\", RTLD_NOW | RTLD_GLOBAL)) == NULL) {" << std::endl
          << "      fprintf(stderr, \"dlopen(%s) : %s\\n\", LIBSSL_SO, dlerror());" << std::endl
          << "      exit(ELIBACC);" << std::endl
          << "    } else {" << std::endl
@@ -693,7 +693,7 @@ void MyFrontendAction::EndSourceFileAction() {
          << "                      major, minor, patch);" << std::endl
          << "      exit(ELIBACC);" << std::endl
          << "    }" << std::endl
-         << "    print_memory_maps();" << std::endl
+         << "    //print_memory_maps();" << std::endl
          << std::endl;
     for(const auto &function : m_functions) {
       if (!function.hasBody()) {
@@ -703,7 +703,7 @@ void MyFrontendAction::EndSourceFileAction() {
     cstr << std::endl
          << "    ossl.ossl_ERR_load_crypto_strings();" << std::endl
          << "    ossl.ossl_SSL_load_error_strings();" << std::endl
-         << "  }" << std::endl
+        //  << "  }" << std::endl
          << std::endl
          << "  printf(\"[+] End of ssl_init function! \\n \");" << std::endl
          << "}" << std::endl
@@ -945,4 +945,3 @@ int main(int argc, const char **argv) {
 
   return ret;
 }
-

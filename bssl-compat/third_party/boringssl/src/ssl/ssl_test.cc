@@ -4019,7 +4019,7 @@ TEST_P(SSLVersionTest, SSLWriteRetry) {
     ASSERT_TRUE(Connect());
 
     if (enable_partial_write) {
-      (client_.get(), SSL_MODE_ENABLE_PARTIAL_WRITE);
+      SSL_set_mode(client_.get(), SSL_MODE_ENABLE_PARTIAL_WRITE);
     }
 
     // Write without reading until the buffer is full and we have an unfinished
